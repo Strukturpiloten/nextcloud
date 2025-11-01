@@ -1,0 +1,6 @@
+# Ignore everything
+*
+
+# except:
+!.gitignore
+!root_default

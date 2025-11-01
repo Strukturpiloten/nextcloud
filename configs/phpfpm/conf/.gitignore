@@ -1,0 +1,6 @@
+# Ignore everything
+*
+
+# except:
+!.gitignore
+!zzz-www_default.conf

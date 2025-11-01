@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# except:
+!.gitignore
+!nextcloud_default.conf
+!nextcloud_original.conf
