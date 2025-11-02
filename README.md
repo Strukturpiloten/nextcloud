@@ -1,9 +1,16 @@
 # podman_nextcloud
 
-A Nextcloud container solutioin using Podman and `docker-compose` as container runtime.
+A Nextcloud container solutioin using Free and Open Source (FOSS) tools.
+
+This project is being tested againt [Podman](https://github.com/containers/podman) as container runtime with [docker/compose](https://github.com/docker/compose) as compose engine.
+
+Docker has not been tested, but if you have tested it let is know in the discuss section.
+
+A future goal is to also support Kubernetes.
 
 ## Index
 
+- [Support by Strukturpiloten](#support-by-strukturpiloten)
 - [Motivation](#motivation)
 - [Other Projects](#other-projects)
   - [Nextcloud All-in-One](#nextcloud-all-in-one)
@@ -23,7 +30,6 @@ A Nextcloud container solutioin using Podman and `docker-compose` as container r
   - [SSL Certificates](#ssl-certificates)
     - [Creating Self-Signed SSL Certificates](#creating-self-signed-ssl-certificates)
   - [First Start](#first-start)
-- [Fehlersuche - temp](#fehlersuche---temp)
 - [Resources](#resources)
   - [PHP-FPM](#php-fpm)
   - [Nginx](#nginx)
@@ -33,12 +39,21 @@ A Nextcloud container solutioin using Podman and `docker-compose` as container r
   - [Recording](#recording)
 - [External Issues affecting this Project](#external-issues-affecting-this-project)
   - [Nextcloud](#nextcloud)
+- [Contribution](#contribution)
+
+## Support by Strukturpiloten
+
+<p align="center">
+  <a href="https://www.strukturpiloten.de"><img src="https://www.strukturpiloten.de/wp-content/uploads/2025/04/logo-strukturpiloten-1.png" alt="Strukturpiloten Logo" width="40%" height="40%"></a>
+</p>
+
+[Strukturpiloten](https://www.strukturpiloten.de) is a German IT consulting company focusing on process optimization, automaton, Linux, networking, and DevOps. If you need professional support for your IT projects, feel free to [contact](https://www.strukturpiloten.de/kontakt/) us! 👋
 
 ## Motivation
 
-We at [Strukturpiloten](https://www.strukturpiloten.de) love Free and Open Source Software (FOSS) and therefore also want to use FOSS software as underlay. When it comes to container runtimes, we prefer [Podman](https://podman.io/) over Docker due to its daemonless architecture and improved security model.
+We at [Strukturpiloten](https://www.strukturpiloten.de) love Free and Open Source Software (FOSS) and therefore also want to use FOSS software as underlay. When it comes to container runtimes we prefer [Podman](https://github.com/containers/podman) ([Website](https://podman.io/)) over Docker due to its daemonless architecture and improved security model.
 
-There are already official and community backed Nextcloud Docker containers available, but none of them support Podman out of the box. This project aims to provide an easy to use Nextcloud setup using Podman as container runtime. Furthermore we intend to provide a Kubernetes setup that can be derived from this Podman project in the near future.
+There are already official and community backed Nextcloud Docker containers available, but none of them support Podman out of the box. This project aims to provide an easy to use Nextcloud setup using Podman as container runtime in the first step. Furthermore we intend to provide a Kubernetes setup that can be derived from this Podman project in the near future.
 
 ## Other Projects
 
@@ -469,3 +484,9 @@ Use an external TURN server or use our Coturn project for Podman (coming soon™
 
 <https://github.com/nextcloud/server/issues/26109>
 <https://github.com/nextcloud/server/issues/49658>
+
+## Contribution
+
+Contributions are very welcome! If you find any issues or have ideas for improvements, please open an issue and a pull request. Feel free to open a discussion for general questions or suggestions.
+
+Thank you for your support! ❤️
