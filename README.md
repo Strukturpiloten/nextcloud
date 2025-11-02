@@ -411,13 +411,11 @@ The installation and configuration will be finished when these log lines appear 
 Nextcloud configuration: completed
 Nextcloud maintenance: mode off
 Maintenance mode already disabled
-
-Service: Cron started
-Service: Starting php-fpm
-    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------][27-Oct-2025 12:50:12] NOTICE: [pool www] 'user' directive is ignored when FPM is not running as root
-[27-Oct-2025 12:50:12] NOTICE: [pool www] 'group' directive is ignored when FPM is not running as root
-[27-Oct-2025 12:50:12] NOTICE: fpm is running, pid 610
-[27-Oct-2025 12:50:12] NOTICE: ready to handle connections
+Manager script: Setup completed successfully
+Nextcloud script: Completed
+Service: Starting cron
+    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------]crond: crond (busybox 1.37.0) started, log level 8
+crond: USER root pid 280 cmd gosu www-data php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
 ```
 
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
