@@ -389,18 +389,20 @@ podman ps
 The output will look like this:
 
 ```bash
-CONTAINER ID  IMAGE                 COMMAND              CREATED      STATUS         PORTS                   NAMES
-d1c582181dcb  docker.io/library/p  postgres              8 hours ago  Up 8 hours     5432/tcp           examplecompany_nextcloud_prod_postgres
-770a668ab747  ghcr.io/nextcloud-r                        8 hours ago  Up 8 hours (he 3002/tcp           examplecompany_nextcloud_prod_whiteboard
-bdf8bbca68e4  localhost/exampleco  sh -c valkey-serv...  8 hours ago  Up 8 hours     6379/tcp           examplecompany_nextcloud_prod_valkey
-60928868d14c  localhost/exampleco  sh /etc/entrypoin...  8 hours ago  Up 8 hours     9000/tcp           examplecompany_nextcloud_prod_phpfpm
-5dbb484db208  docker.io/library/n  nginx -g daemon o...  8 hours ago  Up 8 hours     0.0.0.0:80->8,...  examplecompany_nextcloud_prod_nginx
+CONTAINER ID  IMAGE                           COMMAND               CREATED         STATUS                   PORTS                  NAMES
+29d755bf2a4d  docker.io/library/tempcloud...                        34 minutes ago  Up 34 minutes            6379/tcp               tempcloud2-nextcloud-prod-valkey-1
+31e6257367e1  docker.io/clamav/clamav:1.5...                        34 minutes ago  Up 34 minutes            3310/tcp, 7357/tcp     tempcloud2-nextcloud-prod-clamav-1
+dd227375136e  ghcr.io/nextcloud-releases/...                        34 minutes ago  Up 34 minutes (healthy)  3002/tcp               tempcloud2-nextcloud-prod-whiteboard-1
+2da070fd3166  docker.io/library/postgres:...  postgres              34 minutes ago  Up 34 minutes            5432/tcp               tempcloud2-nextcloud-prod-postgres-1
+343ec463b816  docker.io/library/nginx:1.2...  nginx -g daemon o...  34 minutes ago  Up 34 minutes            0.0.0.0:80->80/tcp...  tempcloud2-nextcloud-prod-nginx-1
+d3fa28c652c6  docker.io/library/tempcloud...  php-fpm               34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-phpfpm-1
+ecc2cd2b5032  docker.io/library/tempcloud...  sh /etc/entrypoin...  34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-manager-1
 ```
 
 The first startup may take some time. You can check the logs of the startup with:
 
 ```bash
-podman logs -f exablau_nextcloud_prod_phpfpm
+podman logs -f tempcloud2-nextcloud-prod-manager-1
 ```
 
 The installation and configuration will be finished when these log lines appear (...yes, the `crond` line feed is partly broken in the container 😀):
@@ -422,22 +424,6 @@ Open your browser and enter your domain name. You should see the Nextcloud login
 
 > [!NOTE]  
 > Sometimes you need to login **twice** at the very first startup.
-
-## Fehlersuche - temp
-
-podman exec -it tempcloud_nextcloud_prod_phpfpm /bin/sh
-apk update
-apk add mariadb-client
-mariadb --skip-ssl -h mariadb -u nextcloud -p'gQWuYpy1qc.6sW+z' nextcloud
-
-podman exec -it tempcloud_nextcloud_prod_mariadb /bin/sh
-
-mariadb
-
-SELECT User, Host FROM mysql.user;
-
-GRANT ALL PRIVILEGES ON *.* TO 'nextcloud'@'%' IDENTIFIED BY 'gQWuYpy1qc.6sW+z' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
 
 ## Resources
 
