@@ -2,6 +2,38 @@
 
 A Nextcloud container solutioin using Podman and `docker-compose` as container runtime.
 
+## Index
+
+- [Motivation](#motivation)
+- [Other Projects](#other-projects)
+  - [Nextcloud All-in-One](#nextcloud-all-in-one)
+  - [Nextcloud Docker Container](#nextcloud-docker-container)
+  - [Linuxserver Nextcloud](#linuxserver-nextcloud)
+- [Prerequisites](#prerequisites)
+  - [Podman Setup](#podman-setup)
+  - [User Setup](#user-setup)
+  - [Allow Non-Root Users to Bind to Privileged Ports](#allow-non-root-users-to-bind-to-privileged-ports)
+  - [Firewall](#firewall)
+- [Installation](#installation)
+  - [Preparation](#preparation)
+  - [Environment Variables](#environment-variables)
+  - [Configs](#configs)
+    - [Minimal Example Setup](#minimal-example-setup)
+    - [All Configs](#all-configs)
+  - [SSL Certificates](#ssl-certificates)
+    - [Creating Self-Signed SSL Certificates](#creating-self-signed-ssl-certificates)
+  - [First Start](#first-start)
+- [Fehlersuche - temp](#fehlersuche---temp)
+- [Resources](#resources)
+  - [PHP-FPM](#php-fpm)
+  - [Nginx](#nginx)
+  - [Whiteboard](#whiteboard)
+  - [TURN](#turn)
+  - [HPB](#hpb)
+  - [Recording](#recording)
+- [External Issues affecting this Project](#external-issues-affecting-this-project)
+  - [Nextcloud](#nextcloud)
+
 ## Motivation
 
 We at [Strukturpiloten](https://www.strukturpiloten.de) love Free and Open Source Software (FOSS) and therefore also want to use FOSS software as underlay. When it comes to container runtimes, we prefer [Podman](https://podman.io/) over Docker due to its daemonless architecture and improved security model.
@@ -389,7 +421,7 @@ Service: Starting php-fpm
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
 
 > [!NOTE]  
-> Sometimes you need to login **twice** on the very first startup.
+> Sometimes you need to login **twice** at the very first startup.
 
 ## Fehlersuche - temp
 
