@@ -1,13 +1,12 @@
 ---
-name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}
+name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}
 networks:
   backend:
-    name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_backend
+    name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-backend
     driver: bridge
 services:
   # https://hub.docker.com/_/postgres
   clamav:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_clamav
     hostname: clamav
     image: ${PODMAN_CLAMAV_IMAGE}
     restart: always
@@ -21,7 +20,6 @@ services:
         bind:
           selinux: Z
   manager:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_manager
     hostname: manager
     restart: always
     networks:
@@ -153,7 +151,6 @@ services:
         PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
   # https://hub.docker.com/_/mariadb
   mariadb:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_mariadb
     hostname: mariadb
     image: ${PODMAN_MARIADB_IMAGE}
     restart: always
@@ -183,7 +180,6 @@ services:
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
   # https://hub.docker.com/_/nginx
   nginx:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_nginx
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}
     restart: always
@@ -221,7 +217,6 @@ services:
       # - 443:443/udp
   # https://hub.docker.com/_/php
   phpfpm:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_phpfpm
     hostname: phpfpm
     restart: always
     networks:
@@ -283,7 +278,6 @@ services:
         PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
   # https://hub.docker.com/_/postgres
   postgres:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_postgres
     hostname: postgres
     image: ${PODMAN_POSTGRES_IMAGE}
     restart: always
@@ -312,7 +306,6 @@ services:
       - PGDATA=${PODMAN_POSTGRES_DATA_DIR_CONTAINER}
   # https://hub.docker.com/r/valkey/valkey/
   valkey:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_valkey
     hostname: valkey
     restart: always
     networks:
@@ -341,7 +334,6 @@ services:
         VALKEY_CONFIG_URL: ${VALKEY_CONFIG_URL}
   # https://github.com/nextcloud/whiteboard
   whiteboard:
-    container_name: ${PODMAN_NAMESPACE}_${PODMAN_SERVICE}_${PODMAN_STAGE}_whiteboard
     hostname: whiteboard
     image: ${PODMAN_WHITEBOARD_IMAGE}
     restart: always
