@@ -197,7 +197,6 @@ POSTGRES_PASSWORD=doNotUseThisSecretForPostgres
 WHITEBOARD_JWT_SECRET_KEY=doNotUseThisSecretForWhiteboard
 VALKEY_PASSWORD=doNotUseThisSecretForValkey
 NEXTCLOUD_ADMIN_PASSWORD=doNotUseThisSecretForNextcloudAdminUser
-NEXTCLOUD_SECRET=doNotUseThisSecretForNextcloud
 
 NEXTCLOUD_DOMAIN=nextcloud.example.com
 NEXTCLOUD_TRUSTED_DOMAINS="localhost nextcloud.example.com"
