@@ -103,6 +103,11 @@ services:
       - MARIADB_DB=${MARIADB_DB}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      # MySQL
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DB=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       # Postgres
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -203,6 +208,40 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
+  # https://hub.docker.com/_/mysql
+  mysql:
+    hostname: mysql
+    image: ${PODMAN_MYSQL_IMAGE}
+    restart: always
+    profiles:
+      - mysql
+    networks:
+      - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # private
+      - type: bind
+        source: "${PODMAN_MYSQL_DATA_DIR_HOST}"
+        target: "${PODMAN_MYSQL_DATA_DIR_CONTAINER}"
+        bind:
+          selinux: Z
+      # Uncomment if you want to use a custom mysql.conf file:
+      # - type: bind
+      #   source: "${PODMAN_MYSQL_CONF_FILE_HOST}"
+      #   target: "${PODMAN_MYSQL_CONF_FILE_CONTAINER}"
+      #   read_only: true
+      #   bind:
+      #     selinux: Z
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
   # https://hub.docker.com/r/nginxinc/nginx-unprivileged
   nginx:
     hostname: nginx
