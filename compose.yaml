@@ -181,6 +181,8 @@ services:
     labels:
       - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
       - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -206,7 +208,6 @@ services:
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}
     restart: always
-    # command: ls -al /etc/ssl/nginx
     networks:
       - backend
     labels:
