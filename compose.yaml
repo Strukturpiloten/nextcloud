@@ -2,8 +2,10 @@
 name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}
 networks:
   backend:
-    name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-backend
+    name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-network-backend
     driver: bridge
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
 services:
   # https://hub.docker.com/_/postgres
   clamav:
@@ -12,6 +14,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -24,6 +30,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -158,6 +168,10 @@ services:
       - mariadb
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -185,6 +199,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -221,6 +239,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -285,6 +307,10 @@ services:
       - postgres
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -310,6 +336,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     volumes:
       # private
       - type: bind
@@ -339,6 +369,10 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${UID}:${GID}"
     environment:
       - STORAGE_STRATEGY=${WHITEBOARD_STORAGE_STRATEGY}
       - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}
