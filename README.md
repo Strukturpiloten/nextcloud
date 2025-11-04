@@ -202,10 +202,25 @@ cd /mnt/nextcloud
 cp podman-nextcloud/.env.example configs/.env
 ```
 
+Check if `UID` and `GID` variables are set for your `podman` user. You can get the values with these commands:
+
+```bash
+echo "$UID"
+echo "$GID"
+```
+
+If they are not set you can get the values:
+
+```bash
+id -u
+id -g
+```
+
 Edit the `configs/.env` file and set at least the following variables:
 
 - `PODMAN_NAMESPACE`: E.g. `customername`, `yourcompanyname`
 - `PODMAN_STAGE`: E.g. `test`,  `prod`
+- Change `PODMAN_UID` and `PODMAN_GID` if needed
 - All variables containing the following values:
   - `/your/absolute/path/to/`: Set the absolute paths to your data and config directories
   - `a_secure_password`: Use a separate secure password for each variable
@@ -231,6 +246,15 @@ That leads us to the following **changes** in the `configs/.env` file for this e
 # namespace and stage
 PODMAN_NAMESPACE=examplecompany
 PODMAN_STAGE=prod
+
+# PODMAN_UID=${UID}
+# PODMAN_GID=${GID}
+PODMAN_UID=2000
+PODMAN_GID=2000
+
+# databases
+PODMAN_SQL_DATABASE=postgres
+PODMAN_KEY_VALUE_DATABASE=valkey
 
 # data paths
 PODMAN_SSL_DIR_HOST=/mnt/nextcloud/configs/ssl
@@ -390,7 +414,11 @@ We chose Postgres as SQL database for this example setup. Therefore we will use 
 - `postgres`
 
 ```bash
-cd /mnt/nextcloud/podman-nextcloud
+cd /mnt/nextcloud
+```
+
+```bash
+cd podman-nextcloud
 ```
 
 ```bash
