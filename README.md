@@ -1,6 +1,6 @@
 # podman_nextcloud
 
-A Nextcloud container solutioin using Free and Open Source (FOSS) tools.
+A Nextcloud container solution using Free and Open Source (FOSS) tools 🤝
 
 This project is being tested againt [Podman](https://github.com/containers/podman) as container runtime with [docker/compose](https://github.com/docker/compose) as compose engine.
 
@@ -84,7 +84,9 @@ The following packages need to be installed, but package names may differ depend
 
 Sadly this project is not compatible with `podman-compose` as `podman-compose` lacks several fundamental features that are already implemented in `docker-compose` 😢
 
-It is recommended to set up IPv4 and IPv6 (dual-stack) on your system.
+Podman Quadlets have not been implemented by this project as many people using Docker and `docker/compose` don't know about Quadlets yet. Therefore we stick to the more common `docker/compose` way of doing things.
+
+It is also recommended to set up IPv4 and IPv6 (dual-stack) on your system.
 
 ### User Setup
 
