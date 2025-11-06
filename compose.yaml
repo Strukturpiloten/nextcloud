@@ -2,16 +2,26 @@
 name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}
 networks:
   backend:
-    name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-backend
+    name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-network-backend
     driver: bridge
+    enable_ipv4: true
+    enable_ipv6: true
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
 services:
-  # https://hub.docker.com/_/postgres
+  # https://hub.docker.com/r/clamav/clamav/
   clamav:
     hostname: clamav
     image: ${PODMAN_CLAMAV_IMAGE}
     restart: always
+    entrypoint: ["/init-unprivileged"]
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -19,11 +29,21 @@ services:
         target: "${PODMAN_CLAMAV_DATA_DIR_CONTAINER}"
         bind:
           selinux: Z
+      - type: bind
+        source: "${PODMAN_CLAMAV_LOG_DIR_HOST}"
+        target: "${PODMAN_CLAMAV_LOG_DIR_CONTAINER}"
+        bind:
+          selinux: Z
   manager:
     hostname: manager
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -83,6 +103,11 @@ services:
       - MARIADB_DB=${MARIADB_DB}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      # MySQL
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DB=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       # Postgres
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -158,6 +183,11 @@ services:
       - mariadb
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -178,13 +208,52 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
-  # https://hub.docker.com/_/nginx
+  # https://hub.docker.com/_/mysql
+  mysql:
+    hostname: mysql
+    image: ${PODMAN_MYSQL_IMAGE}
+    restart: always
+    profiles:
+      - mysql
+    networks:
+      - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # private
+      - type: bind
+        source: "${PODMAN_MYSQL_DATA_DIR_HOST}"
+        target: "${PODMAN_MYSQL_DATA_DIR_CONTAINER}"
+        bind:
+          selinux: Z
+      # Uncomment if you want to use a custom mysql.conf file:
+      # - type: bind
+      #   source: "${PODMAN_MYSQL_CONF_FILE_HOST}"
+      #   target: "${PODMAN_MYSQL_CONF_FILE_CONTAINER}"
+      #   read_only: true
+      #   bind:
+      #     selinux: Z
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
+  # https://hub.docker.com/r/nginxinc/nginx-unprivileged
   nginx:
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -211,9 +280,9 @@ services:
         bind:
           selinux: z
     ports:
-      - 80:80
+      - 80:8080
       # - 80:80/udp
-      - 443:443
+      - 443:8443
       # - 443:443/udp
   # https://hub.docker.com/_/php
   phpfpm:
@@ -221,6 +290,11 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -285,6 +359,11 @@ services:
       - postgres
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # private
       - type: bind
@@ -303,13 +382,19 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGDATA=${PODMAN_POSTGRES_DATA_DIR_CONTAINER}
   # https://hub.docker.com/r/valkey/valkey/
   valkey:
     hostname: valkey
+    image: ${PODMAN_VALKEY_IMAGE}
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    command: ["sh", "-c", "valkey-server", "${PODMAN_VALKEY_CONF_FILE_CONTAINER}"]
     volumes:
       # private
       - type: bind
@@ -324,14 +409,14 @@ services:
       #   read_only: true
       #   bind:
       #     selinux: Z
-    environment:
-      - PODMAN_VALKEY_CONF_FILE_CONTAINER=${PODMAN_VALKEY_CONF_FILE_CONTAINER}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/valkey/valkey"
-      args:
-        PODMAN_VALKEY_IMAGE: ${PODMAN_VALKEY_IMAGE}
-        VALKEY_CONFIG_URL: ${VALKEY_CONFIG_URL}
+    # environment:
+    #   - PODMAN_VALKEY_CONF_FILE_CONTAINER=${PODMAN_VALKEY_CONF_FILE_CONTAINER}
+    # build:
+    #   context: .
+    #   dockerfile: "${PWD}/compose/valkey/valkey"
+    #   args:
+    #     PODMAN_VALKEY_IMAGE: ${PODMAN_VALKEY_IMAGE}
+    #     VALKEY_CONFIG_URL: ${VALKEY_CONFIG_URL}
   # https://github.com/nextcloud/whiteboard
   whiteboard:
     hostname: whiteboard
@@ -339,6 +424,9 @@ services:
     restart: always
     networks:
       - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     environment:
       - STORAGE_STRATEGY=${WHITEBOARD_STORAGE_STRATEGY}
       - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}

@@ -1,12 +1,63 @@
 # podman_nextcloud
 
-A Nextcloud container solutioin using Podman and `docker-compose` as container runtime.
+A Nextcloud container solution using Free and Open Source (FOSS) tools 🤝
+
+This project is being tested againt [Podman](https://github.com/containers/podman) as container runtime with [docker/compose](https://github.com/docker/compose) as compose engine.
+
+Future goals are to also support Kubernetes.
+
+> [!NOTE]  
+> 🚧🚧🚧
+> This project is still under heavy development. Do not use in production setups!
+> There will be breaking changes in the near future.
+> 🚧🚧🚧
+
+## Index
+
+- [Support by Strukturpiloten](#support-by-strukturpiloten)
+- [Motivation](#motivation)
+- [Other Projects](#other-projects)
+  - [Nextcloud All-in-One](#nextcloud-all-in-one)
+  - [Nextcloud Docker Container](#nextcloud-docker-container)
+  - [Linuxserver Nextcloud](#linuxserver-nextcloud)
+- [Prerequisites](#prerequisites)
+  - [Podman Setup](#podman-setup)
+  - [User Setup](#user-setup)
+  - [Allow Non-Root Users to Bind to Privileged Ports](#allow-non-root-users-to-bind-to-privileged-ports)
+  - [Firewall](#firewall)
+- [Installation](#installation)
+  - [Preparation](#preparation)
+  - [Environment Variables](#environment-variables)
+  - [Configs](#configs)
+    - [Minimal Example Setup](#minimal-example-setup)
+    - [All Configs](#all-configs)
+  - [SSL Certificates](#ssl-certificates)
+    - [Creating Self-Signed SSL Certificates](#creating-self-signed-ssl-certificates)
+  - [First Start](#first-start)
+- [Resources](#resources)
+  - [PHP-FPM](#php-fpm)
+  - [Nginx](#nginx)
+  - [Whiteboard](#whiteboard)
+  - [TURN](#turn)
+  - [HPB](#hpb)
+  - [Recording](#recording)
+- [External Issues affecting this Project](#external-issues-affecting-this-project)
+  - [Nextcloud](#nextcloud)
+- [Contribution](#contribution)
+
+## Support by Strukturpiloten
+
+<p align="center">
+  <a href="https://www.strukturpiloten.de"><img src="https://www.strukturpiloten.de/wp-content/uploads/2025/04/logo-strukturpiloten-1.png" alt="Strukturpiloten Logo" width="40%" height="40%"></a>
+</p>
+
+[Strukturpiloten](https://www.strukturpiloten.de) is a German IT consulting company focusing on process optimization, automaton, Linux, networking, and DevOps. If you need professional support for your IT projects, feel free to [contact](https://www.strukturpiloten.de/kontakt/) us! 👋
 
 ## Motivation
 
-We at [Strukturpiloten](https://www.strukturpiloten.de) love Free and Open Source Software (FOSS) and therefore also want to use FOSS software as underlay. When it comes to container runtimes, we prefer [Podman](https://podman.io/) over Docker due to its daemonless architecture and improved security model.
+We at [Strukturpiloten](https://www.strukturpiloten.de) love Free and Open Source Software (FOSS) and therefore also want to use FOSS software as underlay. When it comes to container runtimes we prefer [Podman](https://github.com/containers/podman) ([Website](https://podman.io/)) over Docker due to its daemonless architecture and improved security model.
 
-There are already official and community backed Nextcloud Docker containers available, but none of them support Podman out of the box. This project aims to provide an easy to use Nextcloud setup using Podman as container runtime. Furthermore we intend to provide a Kubernetes setup that can be derived from this Podman project in the near future.
+There are already official and community backed Nextcloud Docker containers available, but none of them support Podman out of the box. This project aims to provide an easy to use Nextcloud setup using Podman as container runtime in the first step. Furthermore we intend to provide a Kubernetes setup that can be derived from this Podman project in the near future.
 
 ## Other Projects
 
@@ -37,7 +88,9 @@ The following packages need to be installed, but package names may differ depend
 
 Sadly this project is not compatible with `podman-compose` as `podman-compose` lacks several fundamental features that are already implemented in `docker-compose` 😢
 
-It is recommended to set up IPv4 and IPv6 (dual-stack) on your system.
+Podman Quadlets have not been implemented by this project as many people using Docker and `docker/compose` don't know about Quadlets yet. Therefore we stick to the more common `docker/compose` way of doing things.
+
+It is also recommended to set up IPv4 and IPv6 (dual-stack) on your system.
 
 ### User Setup
 
@@ -153,10 +206,25 @@ cd /mnt/nextcloud
 cp podman-nextcloud/.env.example configs/.env
 ```
 
+Check if `UID` and `GID` variables are set for your `podman` user. You can get the values with these commands:
+
+```bash
+echo "$UID"
+echo "$GID"
+```
+
+If they are not set you can get the values:
+
+```bash
+id -u
+id -g
+```
+
 Edit the `configs/.env` file and set at least the following variables:
 
 - `PODMAN_NAMESPACE`: E.g. `customername`, `yourcompanyname`
 - `PODMAN_STAGE`: E.g. `test`,  `prod`
+- Change `PODMAN_UID` and `PODMAN_GID` if needed
 - All variables containing the following values:
   - `/your/absolute/path/to/`: Set the absolute paths to your data and config directories
   - `a_secure_password`: Use a separate secure password for each variable
@@ -182,6 +250,15 @@ That leads us to the following **changes** in the `configs/.env` file for this e
 # namespace and stage
 PODMAN_NAMESPACE=examplecompany
 PODMAN_STAGE=prod
+
+# PODMAN_UID=${UID}
+# PODMAN_GID=${GID}
+PODMAN_UID=2000
+PODMAN_GID=2000
+
+# databases
+PODMAN_SQL_DATABASE=postgres
+PODMAN_KEY_VALUE_DATABASE=valkey
 
 # data paths
 PODMAN_SSL_DIR_HOST=/mnt/nextcloud/configs/ssl
@@ -341,7 +418,11 @@ We chose Postgres as SQL database for this example setup. Therefore we will use 
 - `postgres`
 
 ```bash
-cd /mnt/nextcloud/podman-nextcloud
+cd /mnt/nextcloud
+```
+
+```bash
+cd podman-nextcloud
 ```
 
 ```bash
@@ -357,18 +438,20 @@ podman ps
 The output will look like this:
 
 ```bash
-CONTAINER ID  IMAGE                 COMMAND              CREATED      STATUS         PORTS                   NAMES
-d1c582181dcb  docker.io/library/p  postgres              8 hours ago  Up 8 hours     5432/tcp           examplecompany_nextcloud_prod_postgres
-770a668ab747  ghcr.io/nextcloud-r                        8 hours ago  Up 8 hours (he 3002/tcp           examplecompany_nextcloud_prod_whiteboard
-bdf8bbca68e4  localhost/exampleco  sh -c valkey-serv...  8 hours ago  Up 8 hours     6379/tcp           examplecompany_nextcloud_prod_valkey
-60928868d14c  localhost/exampleco  sh /etc/entrypoin...  8 hours ago  Up 8 hours     9000/tcp           examplecompany_nextcloud_prod_phpfpm
-5dbb484db208  docker.io/library/n  nginx -g daemon o...  8 hours ago  Up 8 hours     0.0.0.0:80->8,...  examplecompany_nextcloud_prod_nginx
+CONTAINER ID  IMAGE                           COMMAND               CREATED         STATUS                   PORTS                  NAMES
+29d755bf2a4d  docker.io/library/tempcloud...                        34 minutes ago  Up 34 minutes            6379/tcp               tempcloud2-nextcloud-prod-valkey-1
+31e6257367e1  docker.io/clamav/clamav:1.5...                        34 minutes ago  Up 34 minutes            3310/tcp, 7357/tcp     tempcloud2-nextcloud-prod-clamav-1
+dd227375136e  ghcr.io/nextcloud-releases/...                        34 minutes ago  Up 34 minutes (healthy)  3002/tcp               tempcloud2-nextcloud-prod-whiteboard-1
+2da070fd3166  docker.io/library/postgres:...  postgres              34 minutes ago  Up 34 minutes            5432/tcp               tempcloud2-nextcloud-prod-postgres-1
+343ec463b816  docker.io/library/nginx:1.2...  nginx -g daemon o...  34 minutes ago  Up 34 minutes            0.0.0.0:80->80/tcp...  tempcloud2-nextcloud-prod-nginx-1
+d3fa28c652c6  docker.io/library/tempcloud...  php-fpm               34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-phpfpm-1
+ecc2cd2b5032  docker.io/library/tempcloud...  sh /etc/entrypoin...  34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-manager-1
 ```
 
 The first startup may take some time. You can check the logs of the startup with:
 
 ```bash
-podman logs -f exablau_nextcloud_prod_phpfpm
+podman logs -f tempcloud2-nextcloud-prod-manager-1
 ```
 
 The installation and configuration will be finished when these log lines appear (...yes, the `crond` line feed is partly broken in the container 😀):
@@ -377,35 +460,17 @@ The installation and configuration will be finished when these log lines appear 
 Nextcloud configuration: completed
 Nextcloud maintenance: mode off
 Maintenance mode already disabled
-
-Service: Cron started
-Service: Starting php-fpm
-    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------][27-Oct-2025 12:50:12] NOTICE: [pool www] 'user' directive is ignored when FPM is not running as root
-[27-Oct-2025 12:50:12] NOTICE: [pool www] 'group' directive is ignored when FPM is not running as root
-[27-Oct-2025 12:50:12] NOTICE: fpm is running, pid 610
-[27-Oct-2025 12:50:12] NOTICE: ready to handle connections
+Manager script: Setup completed successfully
+Nextcloud script: Completed
+Service: Starting cron
+    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------]crond: crond (busybox 1.37.0) started, log level 8
+crond: USER root pid 280 cmd gosu www-data php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
 ```
 
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
 
 > [!NOTE]  
-> Sometimes you need to login **twice** on the very first startup.
-
-## Fehlersuche - temp
-
-podman exec -it tempcloud_nextcloud_prod_phpfpm /bin/sh
-apk update
-apk add mariadb-client
-mariadb --skip-ssl -h mariadb -u nextcloud -p'gQWuYpy1qc.6sW+z' nextcloud
-
-podman exec -it tempcloud_nextcloud_prod_mariadb /bin/sh
-
-mariadb
-
-SELECT User, Host FROM mysql.user;
-
-GRANT ALL PRIVILEGES ON *.* TO 'nextcloud'@'%' IDENTIFIED BY 'gQWuYpy1qc.6sW+z' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
+> Sometimes you need to login **twice** at the very first startup.
 
 ## Resources
 
@@ -453,3 +518,9 @@ Use an external TURN server or use our Coturn project for Podman (coming soon™
 
 <https://github.com/nextcloud/server/issues/26109>
 <https://github.com/nextcloud/server/issues/49658>
+
+## Contribution
+
+Contributions are very welcome! If you find any issues or have ideas for improvements, please open an issue and a pull request. Feel free to open a discussion for general questions or suggestions.
+
+Thank you for your support! ❤️
