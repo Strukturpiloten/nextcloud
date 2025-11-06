@@ -4,9 +4,13 @@ A Nextcloud container solution using Free and Open Source (FOSS) tools 🤝
 
 This project is being tested againt [Podman](https://github.com/containers/podman) as container runtime with [docker/compose](https://github.com/docker/compose) as compose engine.
 
-Docker has not been tested, but if you have tested it let is know in the discuss section.
+Future goals are to also support Kubernetes.
 
-A future goal is to also support Kubernetes.
+> [!NOTE]  
+> 🚧🚧🚧
+> This project is still under heavy development. Do not use in production setups!
+> There will be breaking changes in the near future.
+> 🚧🚧🚧
 
 ## Index
 
