@@ -8,8 +8,10 @@ Future goals are to also support Kubernetes.
 
 > [!NOTE]  
 > 🚧🚧🚧
-> This project is still under heavy development. Do not use in production setups!
+> 
+> This project is still under heavy development. Do not use in production setups! 
 > There will be breaking changes in the near future.
+> 
 > 🚧🚧🚧
 
 ## Index
