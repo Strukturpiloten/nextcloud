@@ -47,13 +47,15 @@ Future goals are to also support Kubernetes.
   - [Nextcloud](#nextcloud)
 - [Contribution](#contribution)
 
-## Support by Strukturpiloten
+## Support by Strukturpiloten  
 
-<p align="center">
-  <a href="https://www.strukturpiloten.de"><img src="https://www.strukturpiloten.de/wp-content/uploads/2025/04/logo-strukturpiloten-1.png" alt="Strukturpiloten Logo" width="40%" height="40%"></a>
-</p>
+**Strukturpiloten** is a German consulting crew specializing in **process optimization**, **automation**, **Linux**, **network engineering**, and **DevOps**.  
+We build scalable, open, and human-centered IT systems — from containers to culture.  
 
-[Strukturpiloten](https://www.strukturpiloten.de) is a German IT consulting company focusing on process optimization, automaton, Linux, networking, and DevOps. If you need professional support for your IT projects, feel free to [contact](https://www.strukturpiloten.de/kontakt/) us! 👋
+Need mission control for your next project?  
+👉 [Get in touch](https://www.strukturpiloten.de)  
+
+*Powered by curiosity. Guided by structure.*
 
 ## Motivation
 
