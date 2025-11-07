@@ -1,4 +1,4 @@
-# podman_nextcloud
+# Nextcloud
 
 A Nextcloud container solution using Free and Open Source (FOSS) tools 🤝
 
