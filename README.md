@@ -171,7 +171,7 @@ Therefore these directories will be used for this example setup:
 - `/mnt/nextcloud`: Parent working directory (pwd)
 - `/mnt/nextcloud/configs`: Your config files
 - `/mnt/nextcloud/data`: Your (user) files
-- `/mnt/nextcloud/podman-nextcloud`: This repository
+- `/mnt/nextcloud/nextcloud`: This repository
 
 ### Preparation
 
@@ -189,14 +189,14 @@ mkdir configs
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/Strukturpiloten/podman-nextcloud.git
+git clone https://github.com/Strukturpiloten/nextcloud.git
 ```
 
 There are now three directories in `/mnt/nextcloud`:
 
 - `configs`
 - `data`
-- `podman-nextcloud`
+- `nextcloud`
 
 ### Environment Variables
 
@@ -207,7 +207,7 @@ cd /mnt/nextcloud
 ```
 
 ```bash
-cp podman-nextcloud/.env.example configs/.env
+cp nextcloud/.env.example configs/.env
 ```
 
 Check if `UID` and `GID` variables are set for your `podman` user. You can get the values with these commands:
@@ -314,7 +314,7 @@ mkdir -p configs/nginx/conf
 Copy the default file into the directory:
 
 ```bash
-cp podman-nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcloud.conf
+cp nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcloud.conf
 ```
 
 You need to edit the Nginx `nextcloud.conf` file as it contains the default domain `cloud.example.com` that needs to be changed to your domain like this:
@@ -357,15 +357,15 @@ Copy all default files into the directories:
 
 ```bash
 # nginx
-cp podman-nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcloud.conf
+cp nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcloud.conf
 
 # phpfpm
-cp podman-nextcloud/configs/phpfpm/conf/zzz-www_default.conf configs/phpfpm/conf/zzz-www.conf
-cp podman-nextcloud/configs/phpfpm/ini/nextcloud_default.ini configs/phpfpm/ini/nextcloud.ini
+cp nextcloud/configs/phpfpm/conf/zzz-www_default.conf configs/phpfpm/conf/zzz-www.conf
+cp nextcloud/configs/phpfpm/ini/nextcloud_default.ini configs/phpfpm/ini/nextcloud.ini
 
 # manager
-cp podman-nextcloud/configs/manager/nextcloud_config_default.php configs/manager/nextcloud_config.php
-cp podman-nextcloud/configs/manager/nextcloud_setup_default.sh configs/manager/
+cp nextcloud/configs/manager/nextcloud_config_default.php configs/manager/nextcloud_config.php
+cp nextcloud/configs/manager/nextcloud_setup_default.sh configs/manager/
 ```
 
 There are no default config files for MariaDB, MySQL, Postgres and Valkey, so you need to create them on your own if needed. Also check the environment variables containing path values in `configs/.env` that need to be uncommented and set accordingly. The path variable names end with `_FILE_HOST` and `_DIR_HOST`.
