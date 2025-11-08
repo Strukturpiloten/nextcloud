@@ -235,7 +235,7 @@ Edit the `configs/.env` file and set at least the following variables:
   - `domain.example.com`: Your domain name
 - `NEXTCLOUD_SMTP_`, `NEXTCLOUD_MAIL_` and `NEXTCLOUD_DEFAULT_` variables
 
-The following variables will **not** be changed for this example setup, because we will use the default config files where possible. These are the default values that are also present in our `.env` file. The `configs` path refers to `/mnt/nextcloud/podman-nextcloud/configs` and **not** `/mnt/nextcloud/configs` as the environment variables are consumed be `podman compose` in the `podman-nextcloud` directory. The default values are relative and not absolute paths:
+The following variables will **not** be changed for this example setup, because we will use the default config files where possible. These are the default values that are also present in our `.env` file. The `configs` path refers to `/mnt/nextcloud/nextcloud/configs` and **not** `/mnt/nextcloud/configs` as the environment variables are consumed be `podman compose` in the `nextcloud` directory. The default values are relative and not absolute paths:
 
 ```bash
 PODMAN_PHPFPM_CONF_FILE_HOST=configs/phpfpm/conf/zzz-www.conf
@@ -426,7 +426,7 @@ cd /mnt/nextcloud
 ```
 
 ```bash
-cd podman-nextcloud
+cd nextcloud
 ```
 
 ```bash
