@@ -219,8 +219,6 @@ services:
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
-      # private
-      - ${PODMAN_PHPFPM_CRON_ROOT_FILE_HOST}:${PODMAN_PHPFPM_CRON_ROOT_FILE_CONTAINER}:ro,Z
       # shared
       - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
       - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
