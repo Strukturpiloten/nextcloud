@@ -44,7 +44,7 @@ Future goals are to also support Kubernetes.
   - [HPB](#hpb)
   - [Recording](#recording)
 - [External Issues affecting this Project](#external-issues-affecting-this-project)
-  - [Nextcloud](#nextcloud)
+  - [Nextcloud Server](#nextcloud-server)
 - [Contribution](#contribution)
 
 ## Support by Strukturpiloten  
@@ -481,46 +481,46 @@ Overview of the used documentations, projects and containers.
 
 ### PHP-FPM
 
-<https://github.com/docker-library/php>
-<https://hub.docker.com/_/php>
+- <https://github.com/docker-library/php>
+- <https://hub.docker.com/_/php>
 
 ### Nginx
 
-<https://github.com/nginx/docker-nginx>
-<https://hub.docker.com/_/nginx>
+- <https://github.com/nginx/docker-nginx>
+- <https://hub.docker.com/_/nginx>
 
 ### Whiteboard
 
-<https://github.com/nextcloud/whiteboard>
-<https://help.nextcloud.com/t/how-do-i-setup-the-websocket-server-for-whiteboard-real-time-collaboration/229171/3>
+- <https://github.com/nextcloud/whiteboard>
+- <https://help.nextcloud.com/t/how-do-i-setup-the-websocket-server-for-whiteboard-real-time-collaboration/229171/3>
 
 ### TURN
 
-<https://github.com/coturn/coturn>
-<https://hub.docker.com/r/coturn/coturn>
-<https://help.nextcloud.com/t/howto-setup-nextcloud-talk-with-turn-server/30794/112>
-<https://www.c-rieger.de/nextcloud-und-coturn/>
+- <https://github.com/coturn/coturn>
+- <https://hub.docker.com/r/coturn/coturn>
+- <https://help.nextcloud.com/t/howto-setup-nextcloud-talk-with-turn-server/30794/112>
+- <https://www.c-rieger.de/nextcloud-und-coturn/>
 
 Use an external TURN server or use our Coturn project for Podman (coming soon™️).
 
 ### HPB
 
-<https://github.com/strukturag/nextcloud-spreed-signaling>
-<https://www.c-rieger.de/nextcloud-hpb-talk-signaling-server/>
-<https://help.nextcloud.com/t/high-performance-backend-talk-easiest-and-simplest/206836/3>
-<https://help.nextcloud.com/t/server-stun-and-high-performance-backend-server-talk/190072/3>
-<https://help.nextcloud.com/t/nextcloud-talk-high-performance-backend/167217/16>
+- <https://github.com/strukturag/nextcloud-spreed-signaling>
+- <https://www.c-rieger.de/nextcloud-hpb-talk-signaling-server/>
+- <https://help.nextcloud.com/t/high-performance-backend-talk-easiest-and-simplest/206836/3>
+- <https://help.nextcloud.com/t/server-stun-and-high-performance-backend-server-talk/190072/3>
+- <https://help.nextcloud.com/t/nextcloud-talk-high-performance-backend/167217/16>
 
 ### Recording
 
-<https://github.com/nextcloud/nextcloud-talk-recording>
+- <https://github.com/nextcloud/nextcloud-talk-recording>
 
 ## External Issues affecting this Project
 
-### Nextcloud
+### Nextcloud Server
 
-<https://github.com/nextcloud/server/issues/26109>
-<https://github.com/nextcloud/server/issues/49658>
+- <https://github.com/nextcloud/server/issues/26109>
+- <https://github.com/nextcloud/server/issues/49658>
 
 ## Contribution
 
