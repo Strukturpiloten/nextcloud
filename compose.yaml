@@ -24,16 +24,8 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_CLAMAV_DATA_DIR_HOST}"
-        target: "${PODMAN_CLAMAV_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: Z
-      - type: bind
-        source: "${PODMAN_CLAMAV_LOG_DIR_HOST}"
-        target: "${PODMAN_CLAMAV_LOG_DIR_CONTAINER}"
-        bind:
-          selinux: Z
+      - ${PODMAN_CLAMAV_DATA_DIR_HOST}:${PODMAN_CLAMAV_DATA_DIR_CONTAINER}:Z
+      - ${PODMAN_CLAMAV_LOG_DIR_HOST}:${PODMAN_CLAMAV_LOG_DIR_CONTAINER}:Z
   manager:
     hostname: manager
     restart: always
@@ -46,50 +38,17 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_PHPFPM_CRON_ROOT_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_CRON_ROOT_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
-      - type: bind
-        source: "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_HOST}"
-        target: "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
-      - type: bind
-        source: "${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_HOST}"
-        target: "${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
+      - ${PODMAN_MANAGER_CRON_ROOT_FILE_HOST}:${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}:ro,Z
       # shared
-      - type: bind
-        source: "${PODMAN_PHPFPM_CONF_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_CONF_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_PHPFPM_INI_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_INI_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
+      - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
     environment:
       # Storage
-      - PODMAN_PHPFPM_CRON_ROOT_FILE_CONTAINER=${PODMAN_PHPFPM_CRON_ROOT_FILE_CONTAINER}
+      - PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER=${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}
       - PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}
       - PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}
       - PODMAN_PHPFPM_CONF_FILE_CONTAINER=${PODMAN_PHPFPM_CONF_FILE_CONTAINER}
@@ -190,18 +149,9 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_MARIADB_DATA_DIR_HOST}"
-        target: "${PODMAN_MARIADB_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: Z
+      - ${PODMAN_MARIADB_DATA_DIR_HOST}:${PODMAN_MARIADB_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom mariadb.conf file:
-      # - type: bind
-      #   source: "${PODMAN_MARIADB_CONF_FILE_HOST}"
-      #   target: "${PODMAN_MARIADB_CONF_FILE_CONTAINER}"
-      #   read_only: true
-      #   bind:
-      #     selinux: Z
+      # - ${PODMAN_MARIADB_CONF_FILE_HOST}:${PODMAN_MARIADB_CONF_FILE_CONTAINER}:ro,Z
     environment:
       - MARIADB_DATABASE=${MARIADB_DB}
       - MARIADB_USER=${MARIADB_USER}
@@ -224,18 +174,9 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_MYSQL_DATA_DIR_HOST}"
-        target: "${PODMAN_MYSQL_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: Z
+      - ${PODMAN_MYSQL_DATA_DIR_HOST}:${PODMAN_MYSQL_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom mysql.conf file:
-      # - type: bind
-      #   source: "${PODMAN_MYSQL_CONF_FILE_HOST}"
-      #   target: "${PODMAN_MYSQL_CONF_FILE_CONTAINER}"
-      #   read_only: true
-      #   bind:
-      #     selinux: Z
+      # - ${PODMAN_MYSQL_CONF_FILE_HOST}:${PODMAN_MYSQL_CONF_FILE_CONTAINER}:ro,Z
     environment:
       - MYSQL_DATABASE=${MYSQL_DB}
       - MYSQL_USER=${MYSQL_USER}
@@ -256,29 +197,11 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_NGINX_CONF_DIR_HOST}"
-        target: "${PODMAN_NGINX_CONF_DIR_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
-      - type: bind
-        source: "${PODMAN_SSL_DIR_HOST}"
-        target: "${PODMAN_NGINX_SSL_DIR_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
+      - ${PODMAN_NGINX_CONF_DIR_HOST}:${PODMAN_NGINX_CONF_DIR_CONTAINER}:ro,Z
+      - ${PODMAN_SSL_DIR_HOST}:${PODMAN_NGINX_SSL_DIR_CONTAINER}:ro,Z
       # shared
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
     ports:
       - 80:8080
       # - 80:80/udp
@@ -296,36 +219,11 @@ services:
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
-      # private
-      - type: bind
-        source: "${PODMAN_PHPFPM_CRON_ROOT_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_CRON_ROOT_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: Z
       # shared
-      - type: bind
-        source: "${PODMAN_PHPFPM_CONF_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_CONF_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_PHPFPM_INI_FILE_HOST}"
-        target: "${PODMAN_PHPFPM_INI_FILE_CONTAINER}"
-        read_only: true
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
-      - type: bind
-        source: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}"
-        target: "${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: z
+      - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
     environment:
       - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
       # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
@@ -366,18 +264,9 @@ services:
     userns_mode: "keep-id"
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_POSTGRES_DATA_DIR_HOST}"
-        target: "${PODMAN_POSTGRES_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: Z
+      - ${PODMAN_POSTGRES_DATA_DIR_HOST}:${PODMAN_POSTGRES_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom postgresql.conf file:
-      # - type: bind
-      #   source: "${PODMAN_POSTGRES_CONF_FILE_HOST}"
-      #   target: "${PODMAN_POSTGRES_CONF_FILE_CONTAINER}"
-      #   read_only: true
-      #   bind:
-      #     selinux: Z
+      # - ${PODMAN_POSTGRES_CONF_FILE_HOST}:${PODMAN_POSTGRES_CONF_FILE_CONTAINER}:ro,Z
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -397,18 +286,9 @@ services:
     command: ["sh", "-c", "valkey-server", "${PODMAN_VALKEY_CONF_FILE_CONTAINER}"]
     volumes:
       # private
-      - type: bind
-        source: "${PODMAN_VALKEY_DATA_DIR_HOST}"
-        target: "${PODMAN_VALKEY_DATA_DIR_CONTAINER}"
-        bind:
-          selinux: Z
+      - ${PODMAN_VALKEY_DATA_DIR_HOST}:${PODMAN_VALKEY_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom valkey.conf file:
-      # - type: bind
-      #   source: "${PODMAN_VALKEY_CONF_FILE_HOST}"
-      #   target: "${PODMAN_VALKEY_CONF_FILE_CONTAINER}"
-      #   read_only: true
-      #   bind:
-      #     selinux: Z
+      # - ${PODMAN_VALKEY_CONF_FILE_HOST}:${PODMAN_VALKEY_CONF_FILE_CONTAINER}:ro,Z
     # environment:
     #   - PODMAN_VALKEY_CONF_FILE_CONTAINER=${PODMAN_VALKEY_CONF_FILE_CONTAINER}
     # build:

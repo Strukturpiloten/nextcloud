@@ -8,10 +8,10 @@ Future goals are to also support Kubernetes.
 
 > [!NOTE]  
 > 🚧🚧🚧
-> 
-> This project is still under heavy development. Do not use in production setups! 
+>
+> This project is still under heavy development. Do not use in production setups!
 > There will be breaking changes in the near future.
-> 
+>
 > 🚧🚧🚧
 
 ## Index
@@ -44,7 +44,7 @@ Future goals are to also support Kubernetes.
   - [HPB](#hpb)
   - [Recording](#recording)
 - [External Issues affecting this Project](#external-issues-affecting-this-project)
-  - [Nextcloud](#nextcloud)
+  - [Nextcloud Server](#nextcloud-server)
 - [Contribution](#contribution)
 
 ## Support by Strukturpiloten  
@@ -244,8 +244,8 @@ PODMAN_PHPFPM_CONF_FILE_HOST=configs/phpfpm/conf/zzz-www.conf
 PODMAN_PHPFPM_INI_FILE_HOST=configs/phpfpm/ini/nextcloud.ini
 # PODMAN_PHPFPM_INI_FILE_HOST=/your/absolute/path/to/configs/phpfpm/ini/nextcloud.ini
 
-PODMAN_PHPFPM_CRON_ROOT_FILE_HOST=configs/phpfpm/cron/cron_root
-# PODMAN_PHPFPM_CRON_ROOT_FILE_HOST=/your/absolute/path/to/configs/phpfpm/cron/cron_root
+PODMAN_MANAGER_CRON_ROOT_FILE_HOST=configs/phpfpm/cron/cron_root
+# PODMAN_MANAGER_CRON_ROOT_FILE_HOST=/your/absolute/path/to/configs/phpfpm/cron/cron_root
 ```
 
 That leads us to the following **changes** in the `configs/.env` file for this example:
@@ -458,7 +458,7 @@ The first startup may take some time. You can check the logs of the startup with
 podman logs -f tempcloud2-nextcloud-prod-manager-1
 ```
 
-The installation and configuration will be finished when these log lines appear (...yes, the `crond` line feed is partly broken in the container 😀):
+The installation and configuration will be finished when these log lines appear:
 
 ```bash
 Nextcloud configuration: completed
@@ -467,8 +467,7 @@ Maintenance mode already disabled
 Manager script: Setup completed successfully
 Nextcloud script: Completed
 Service: Starting cron
-    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------]crond: crond (busybox 1.37.0) started, log level 8
-crond: USER root pid 280 cmd gosu www-data php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
+ 1/1 [============================] 100%crond: crond (busybox 1.37.0) started, log level 8
 ```
 
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
@@ -482,46 +481,46 @@ Overview of the used documentations, projects and containers.
 
 ### PHP-FPM
 
-<https://github.com/docker-library/php>
-<https://hub.docker.com/_/php>
+- <https://github.com/docker-library/php>
+- <https://hub.docker.com/_/php>
 
 ### Nginx
 
-<https://github.com/nginx/docker-nginx>
-<https://hub.docker.com/_/nginx>
+- <https://github.com/nginx/docker-nginx>
+- <https://hub.docker.com/_/nginx>
 
 ### Whiteboard
 
-<https://github.com/nextcloud/whiteboard>
-<https://help.nextcloud.com/t/how-do-i-setup-the-websocket-server-for-whiteboard-real-time-collaboration/229171/3>
+- <https://github.com/nextcloud/whiteboard>
+- <https://help.nextcloud.com/t/how-do-i-setup-the-websocket-server-for-whiteboard-real-time-collaboration/229171/3>
 
 ### TURN
 
-<https://github.com/coturn/coturn>
-<https://hub.docker.com/r/coturn/coturn>
-<https://help.nextcloud.com/t/howto-setup-nextcloud-talk-with-turn-server/30794/112>
-<https://www.c-rieger.de/nextcloud-und-coturn/>
+- <https://github.com/coturn/coturn>
+- <https://hub.docker.com/r/coturn/coturn>
+- <https://help.nextcloud.com/t/howto-setup-nextcloud-talk-with-turn-server/30794/112>
+- <https://www.c-rieger.de/nextcloud-und-coturn/>
 
 Use an external TURN server or use our Coturn project for Podman (coming soon™️).
 
 ### HPB
 
-<https://github.com/strukturag/nextcloud-spreed-signaling>
-<https://www.c-rieger.de/nextcloud-hpb-talk-signaling-server/>
-<https://help.nextcloud.com/t/high-performance-backend-talk-easiest-and-simplest/206836/3>
-<https://help.nextcloud.com/t/server-stun-and-high-performance-backend-server-talk/190072/3>
-<https://help.nextcloud.com/t/nextcloud-talk-high-performance-backend/167217/16>
+- <https://github.com/strukturag/nextcloud-spreed-signaling>
+- <https://www.c-rieger.de/nextcloud-hpb-talk-signaling-server/>
+- <https://help.nextcloud.com/t/high-performance-backend-talk-easiest-and-simplest/206836/3>
+- <https://help.nextcloud.com/t/server-stun-and-high-performance-backend-server-talk/190072/3>
+- <https://help.nextcloud.com/t/nextcloud-talk-high-performance-backend/167217/16>
 
 ### Recording
 
-<https://github.com/nextcloud/nextcloud-talk-recording>
+- <https://github.com/nextcloud/nextcloud-talk-recording>
 
 ## External Issues affecting this Project
 
-### Nextcloud
+### Nextcloud Server
 
-<https://github.com/nextcloud/server/issues/26109>
-<https://github.com/nextcloud/server/issues/49658>
+- <https://github.com/nextcloud/server/issues/26109>
+- <https://github.com/nextcloud/server/issues/49658>
 
 ## Contribution
 

@@ -9,7 +9,6 @@ RUN apk update && \
     ca-certificates \
     ffmpeg \
     ffmpeg-libavcodec \
-    gosu \
     tzdata
 
 RUN install-php-extensions \

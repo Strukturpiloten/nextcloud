@@ -1,5 +1,5 @@
 # Nextcloud cronjobs
 # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html
-*/5  *  *  *  * gosu www-data php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
+*/5  *  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
 
 # Don't delete the whitespaces before and after this comment!
