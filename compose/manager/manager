@@ -15,6 +15,7 @@ RUN install-php-extensions \
     apcu \
     exif \
     gd \
+    gmp \
     imagick \
     intl \
     pcntl \
@@ -24,6 +25,7 @@ RUN install-php-extensions \
     phar \
     redis \
     sodium \
+    sysvsem \
     zip
 
 RUN mv "${PHP_INI_DIR}/php.ini-production" "${PHP_INI_DIR}/php.ini"
