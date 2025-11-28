@@ -7,9 +7,9 @@ RUN apk update && \
     apk upgrade && \
     apk add --no-cache \
     ca-certificates \
-    cronie \
     ffmpeg \
     ffmpeg-libavcodec \
+    supercronic \
     tzdata
 
 RUN install-php-extensions \
