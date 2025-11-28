@@ -186,21 +186,21 @@ php occ app:update --all
 
 # App: files_antivirus
 echo "Nextcloud app: Configure files_antivirus"
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_HOST}" --type=string files_antivirus av_host
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_PORT}" --type=string files_antivirus av_port
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_MODE}" --type=string files_antivirus av_mode
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_SOCKET}" --type=string files_antivirus av_socket
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_CMD_OPTIONS}" --type=string files_antivirus av_cmd_options
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_INFECTION_ACTION}" --type=string files_antivirus av_infected_action
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_STREAM_MAX_LENGTH}" --type=string files_antivirus av_stream_max_length
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_MAX_FILE_SIZE}" --type=string files_antivirus av_max_file_size
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_SCAN_FIRST_BYTES}" --type=string files_antivirus av_scan_first_bytes
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_ICAP_MODE}" --type=string files_antivirus av_icap_mode
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_ICAP_REQUEST_SERVICE}" --type=string files_antivirus av_icap_request_service
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_ICAP_RESPONSE_HEADER}" --type=string files_antivirus av_icap_response_header
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_ICAP_TLS}" --type=string files_antivirus av_icap_tls
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_BLOCK_UNSCANNABLE}" --type=string files_antivirus av_block_unscannable
-php /var/www/nextcloud/occ config:app:set --value "${CLAMAV_AV_BLOCK_UNREACHABLE}" --type=string files_antivirus av_block_unreachable
+php occ config:app:set --value "${CLAMAV_AV_HOST}" --type=string files_antivirus av_host
+php occ config:app:set --value "${CLAMAV_AV_PORT}" --type=string files_antivirus av_port
+php occ config:app:set --value "${CLAMAV_AV_MODE}" --type=string files_antivirus av_mode
+php occ config:app:set --value "${CLAMAV_AV_SOCKET}" --type=string files_antivirus av_socket
+php occ config:app:set --value "${CLAMAV_AV_CMD_OPTIONS}" --type=string files_antivirus av_cmd_options
+php occ config:app:set --value "${CLAMAV_AV_INFECTION_ACTION}" --type=string files_antivirus av_infected_action
+php occ config:app:set --value "${CLAMAV_AV_STREAM_MAX_LENGTH}" --type=string files_antivirus av_stream_max_length
+php occ config:app:set --value "${CLAMAV_AV_MAX_FILE_SIZE}" --type=string files_antivirus av_max_file_size
+php occ config:app:set --value "${CLAMAV_AV_SCAN_FIRST_BYTES}" --type=string files_antivirus av_scan_first_bytes
+php occ config:app:set --value "${CLAMAV_AV_ICAP_MODE}" --type=string files_antivirus av_icap_mode
+php occ config:app:set --value "${CLAMAV_AV_ICAP_REQUEST_SERVICE}" --type=string files_antivirus av_icap_request_service
+php occ config:app:set --value "${CLAMAV_AV_ICAP_RESPONSE_HEADER}" --type=string files_antivirus av_icap_response_header
+php occ config:app:set --value "${CLAMAV_AV_ICAP_TLS}" --type=string files_antivirus av_icap_tls
+php occ config:app:set --value "${CLAMAV_AV_BLOCK_UNSCANNABLE}" --type=string files_antivirus av_block_unscannable
+php occ config:app:set --value "${CLAMAV_AV_BLOCK_UNREACHABLE}" --type=string files_antivirus av_block_unreachable
 
 # Other
 echo "Nextcloud system: Set maintenance window"
