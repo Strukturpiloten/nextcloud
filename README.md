@@ -8,10 +8,10 @@ Future goals are to also support Kubernetes.
 
 > [!NOTE]  
 > 🚧🚧🚧
-> 
-> This project is still under heavy development. Do not use in production setups! 
+>
+> This project is still under heavy development. Do not use in production setups!
 > There will be breaking changes in the near future.
-> 
+>
 > 🚧🚧🚧
 
 ## Index
@@ -458,7 +458,7 @@ The first startup may take some time. You can check the logs of the startup with
 podman logs -f tempcloud2-nextcloud-prod-manager-1
 ```
 
-The installation and configuration will be finished when these log lines appear (...yes, the `crond` line feed is partly broken in the container 😀):
+The installation and configuration will be finished when these log lines appear:
 
 ```bash
 Nextcloud configuration: completed
@@ -467,8 +467,7 @@ Maintenance mode already disabled
 Manager script: Setup completed successfully
 Nextcloud script: Completed
 Service: Starting cron
-    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------]crond: crond (busybox 1.37.0) started, log level 8
-crond: USER root pid 280 cmd gosu www-data php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
+ 1/1 [============================] 100%crond: crond (busybox 1.37.0) started, log level 8
 ```
 
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
