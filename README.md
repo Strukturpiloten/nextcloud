@@ -244,8 +244,8 @@ PODMAN_PHPFPM_CONF_FILE_HOST=configs/phpfpm/conf/zzz-www.conf
 PODMAN_PHPFPM_INI_FILE_HOST=configs/phpfpm/ini/nextcloud.ini
 # PODMAN_PHPFPM_INI_FILE_HOST=/your/absolute/path/to/configs/phpfpm/ini/nextcloud.ini
 
-PODMAN_PHPFPM_CRON_ROOT_FILE_HOST=configs/phpfpm/cron/cron_root
-# PODMAN_PHPFPM_CRON_ROOT_FILE_HOST=/your/absolute/path/to/configs/phpfpm/cron/cron_root
+PODMAN_MANAGER_CRON_ROOT_FILE_HOST=configs/phpfpm/cron/cron_root
+# PODMAN_MANAGER_CRON_ROOT_FILE_HOST=/your/absolute/path/to/configs/phpfpm/cron/cron_root
 ```
 
 That leads us to the following **changes** in the `configs/.env` file for this example:
