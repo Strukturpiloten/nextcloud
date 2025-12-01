@@ -271,7 +271,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  # https://hub.docker.com/r/valkey/valkey/
+  # https://hub.docker.com/_/redis
   redis:
     hostname: redis
     image: ${PODMAN_REDIS_IMAGE}
