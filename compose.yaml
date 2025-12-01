@@ -272,10 +272,32 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   # https://hub.docker.com/r/valkey/valkey/
+  redis:
+    hostname: redis
+    image: ${PODMAN_REDIS_IMAGE}
+    restart: always
+    profiles:
+      - redis
+    networks:
+      - backend
+    labels:
+      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
+      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    command: ["sh", "-c", "redis-server", "${PODMAN_REDIS_CONF_FILE_CONTAINER}"]
+    volumes:
+      # private
+      - ${PODMAN_REDIS_DATA_DIR_HOST}:${PODMAN_REDIS_DATA_DIR_CONTAINER}:Z
+      # Uncomment if you want to use a custom redis.conf file:
+      # - ${PODMAN_REDIS_CONF_FILE_HOST}:${PODMAN_REDIS_CONF_FILE_CONTAINER}:ro,Z
+  # https://hub.docker.com/r/valkey/valkey/
   valkey:
     hostname: valkey
     image: ${PODMAN_VALKEY_IMAGE}
     restart: always
+    profiles:
+      - valkey
     networks:
       - backend
     labels:
@@ -289,14 +311,6 @@ services:
       - ${PODMAN_VALKEY_DATA_DIR_HOST}:${PODMAN_VALKEY_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom valkey.conf file:
       # - ${PODMAN_VALKEY_CONF_FILE_HOST}:${PODMAN_VALKEY_CONF_FILE_CONTAINER}:ro,Z
-    # environment:
-    #   - PODMAN_VALKEY_CONF_FILE_CONTAINER=${PODMAN_VALKEY_CONF_FILE_CONTAINER}
-    # build:
-    #   context: .
-    #   dockerfile: "${PWD}/compose/valkey/valkey"
-    #   args:
-    #     PODMAN_VALKEY_IMAGE: ${PODMAN_VALKEY_IMAGE}
-    #     VALKEY_CONFIG_URL: ${VALKEY_CONFIG_URL}
   # https://github.com/nextcloud/whiteboard
   whiteboard:
     hostname: whiteboard

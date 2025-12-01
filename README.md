@@ -430,7 +430,7 @@ cd nextcloud
 ```
 
 ```bash
-podman compose --env-file "../configs/.env" --profile "postgres" up -d --build
+podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" up -d --build
 ```
 
 Wait for the containers to build. Afterwards check their status:
