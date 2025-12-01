@@ -25,5 +25,5 @@ echo "Nextcloud script: Completed"
 
 # Start the services
 echo "Service: Starting cron"
-# Run in foreground with log level 8 (debug)
-crond -f -d 8
+# Run supercronic in foreground
+supercronic -split-logs "${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}"
