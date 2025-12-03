@@ -36,6 +36,7 @@ Future goals are to also support Kubernetes.
   - [SSL Certificates](#ssl-certificates)
     - [Creating Self-Signed SSL Certificates](#creating-self-signed-ssl-certificates)
   - [First Start](#first-start)
+  - [Systemd Configuration](#systemd-configuration)
 - [Resources](#resources)
   - [PHP-FPM](#php-fpm)
   - [Nginx](#nginx)
@@ -105,13 +106,13 @@ Create a username and group for running the containers, e.g.:
 - User: `podman`
 - Group: `podman`
 
-Make your user services reboot persistent by enabling linger for your `podman` user:
+Make your user services reboot persistent by enabling linger for your `podman` user. Run this command as `root` user:
 
 ```bash
 loginctl enable-linger podman
 ```
 
-Also add the `podman.sock` systemd socket for non-root users. Run this command with your `podman` user:
+Also add the `podman.sock` systemd socket for **non-root** users. Run this command with your `podman` user:
 
 ```bash
 systemctl --user enable --now podman.socket
@@ -421,6 +422,11 @@ We chose Postgres as SQL database for this example setup. Therefore we will use 
 - `mysql`
 - `postgres`
 
+These profiles are available for the key-value database:
+
+- `valkey`
+- `redis`
+
 ```bash
 cd /mnt/nextcloud
 ```
@@ -429,11 +435,19 @@ cd /mnt/nextcloud
 cd nextcloud
 ```
 
+Build the containers:
+
 ```bash
-podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" up -d --build
+podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" build
 ```
 
-Wait for the containers to build. Afterwards check their status:
+Start the containers:
+
+```bash
+podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" up -d
+```
+
+Check their status:
 
 ```bash
 podman ps
@@ -474,6 +488,79 @@ Open your browser and enter your domain name. You should see the Nextcloud login
 
 > [!NOTE]  
 > Sometimes you need to login **twice** at the very first startup.
+
+### Systemd Configuration
+
+To make sure that your Nextcloud starts automatically after a system reboot, you can create a systemd service file. The following parameters need to be adapted:
+
+- Description
+- WorkingDirectory
+- ExecStart
+- ExecStop
+
+Create the systemd service file `podman-examplecompany-nextcloud-prod.service` under `~/.config/systemd/user` with the following content:
+
+```bash
+Description=Podman examplecompany-nextcloud-prod
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+After=podman.socket
+Requires=podman.socket
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/mnt/nextcloud
+ExecStart=/usr/bin/env podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" start
+ExecStop=/usr/bin/env podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" stop
+
+[Install]
+WantedBy=default.target
+```
+
+Stop your containers:
+
+```bash
+cd /mnt/nextcloud
+```
+
+```bash
+podman compose --env-file "../configs/.env" --profile "postgres" --profile "valkey" stop
+```
+
+Enable and start the systemd service:
+
+> [!NOTE]  
+> Systemd linger needs to be enabled for the `podman` user as described in the [User Setup](#user-setup) section.
+
+```bash
+systemctl --user enable --now examplecompany-nextcloud-prod.service
+```
+
+Check the container status:
+
+```bash
+podman ps
+```
+
+If the server gets rebooted the containers will be started automatically. If the containers don't get started check the service status:
+
+```bash
+systemctl --user status examplecompany-nextcloud-prod.service
+```
+
+If the service didn't get started check that your `podman` user exists under the Systemd `linger` directory:
+
+```bash
+ls -l /var/lib/systemd/linger
+```
+
+Also check the current boot log as the `podman` or `root` user depending on the current state:
+
+```bash
+journalctl -b 0
+```
 
 ## Resources
 
