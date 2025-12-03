@@ -481,7 +481,8 @@ Maintenance mode already disabled
 Manager script: Setup completed successfully
 Nextcloud script: Completed
 Service: Starting cron
- 1/1 [============================] 100%crond: crond (busybox 1.37.0) started, log level 8
+ 1/1 [============================] 100%time="2025-12-03T09:34:13Z" level=warning msg="process reaping disabled, not pid 1"
+time="2025-12-03T09:34:13Z" level=info msg="read crontab: /etc/crontabs/root"
 ```
 
 Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
