@@ -26,7 +26,7 @@ try {
         # Prevent status.php from echoing output directly
         ob_start();
         require $nextcloud_status_file;
-        ob_flush();
+        ob_end_clean();
     } else {
         print("Nextcloud status script: Error: ".$nextcloud_status_file." file does not exist or is not readable\n");
         exit(1);
