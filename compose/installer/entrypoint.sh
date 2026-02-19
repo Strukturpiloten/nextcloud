@@ -15,17 +15,11 @@ echo "Nextcloud directory ownerships: Completed"
 
 # Configure the Nextcloud instance
 echo "Nextcloud script: Starting"
-if [ -n "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ] && [ -e "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ]; then
-  sh "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}"
+if [ -n "${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ] && [ -e "${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ]; then
+  sh "${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}"
 else
-  echo "Error: PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER is not set or file does not exist."
+  echo "Error: PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER is not set or file does not exist."
   exit 1
 fi
 echo "Nextcloud script: Completed"
-
-echo "Execute healthcheck once"
-php -f "${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}"
-
-echo "Service: Starting cron"
-# Run supercronic in foreground
-supercronic -split-logs "${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}"
+echo "Nextcloud setup completed. Installer container finished."

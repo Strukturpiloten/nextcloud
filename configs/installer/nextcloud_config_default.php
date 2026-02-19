@@ -6,11 +6,6 @@ ini_set('log_errors', '0');
 
 print("Nextcloud configuration script: started\n");
 
-# TODO @TheRealBecks: Remove temporary sleep
-print("Temporary sleep for 30 seconds");
-sleep(30);
-
-
 try {
     $env_vars = getenv();
 

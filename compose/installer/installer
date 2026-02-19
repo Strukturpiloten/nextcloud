@@ -31,10 +31,8 @@ RUN install-php-extensions \
 
 RUN mv "${PHP_INI_DIR}/php.ini-production" "${PHP_INI_DIR}/php.ini"
 
-COPY compose/manager/entrypoint.sh /etc/entrypoint.sh
+COPY compose/installer/entrypoint.sh /etc/entrypoint.sh
 RUN chmod +x /etc/entrypoint.sh
-
-COPY compose/manager/nextcloud_status.php /etc/nextcloud_status.php
 
 ARG PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER
 RUN mkdir ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
