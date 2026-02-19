@@ -267,8 +267,9 @@ PODMAN_KEY_VALUE_DATABASE=valkey
 
 # data paths
 PODMAN_SSL_DIR_HOST=/mnt/nextcloud/configs/ssl
+PODMAN_CLAMAV_DATA_DIR_HOST=/mnt/nextcloud/data/clamav_data
+PODMAN_CLAMAV_LOG_DIR_HOST=/mnt/nextcloud/data/clamav_log
 PODMAN_NGINX_CONF_DIR_HOST=/mnt/nextcloud/configs/nginx/conf
-PODMAN_CLAMAV_DATA_DIR_HOST=/mnt/nextcloud/data/clamav
 PODMAN_POSTGRES_DATA_DIR_HOST=/mnt/nextcloud/data/postgres
 PODMAN_VALKEY_DATA_DIR_HOST=/mnt/nextcloud/data/valkey
 PODMAN_NEXTCLOUD_DATA_DIR_HOST=/mnt/nextcloud/data/nextcloud
@@ -453,42 +454,56 @@ Check their status:
 podman ps
 ```
 
-The output will look like this:
+The first startup may take some time. You can check the logs of the `installer` container with:
 
 ```bash
-CONTAINER ID  IMAGE                           COMMAND               CREATED         STATUS                   PORTS                  NAMES
-29d755bf2a4d  docker.io/library/tempcloud...                        34 minutes ago  Up 34 minutes            6379/tcp               tempcloud2-nextcloud-prod-valkey-1
-31e6257367e1  docker.io/clamav/clamav:1.5...                        34 minutes ago  Up 34 minutes            3310/tcp, 7357/tcp     tempcloud2-nextcloud-prod-clamav-1
-dd227375136e  ghcr.io/nextcloud-releases/...                        34 minutes ago  Up 34 minutes (healthy)  3002/tcp               tempcloud2-nextcloud-prod-whiteboard-1
-2da070fd3166  docker.io/library/postgres:...  postgres              34 minutes ago  Up 34 minutes            5432/tcp               tempcloud2-nextcloud-prod-postgres-1
-343ec463b816  docker.io/library/nginx:1.2...  nginx -g daemon o...  34 minutes ago  Up 34 minutes            0.0.0.0:80->80/tcp...  tempcloud2-nextcloud-prod-nginx-1
-d3fa28c652c6  docker.io/library/tempcloud...  php-fpm               34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-phpfpm-1
-ecc2cd2b5032  docker.io/library/tempcloud...  sh /etc/entrypoin...  34 minutes ago  Up 34 minutes            9000/tcp               tempcloud2-nextcloud-prod-manager-1
+podman logs -f examplecompany-nextcloud-prod-installer-1
 ```
 
-The first startup may take some time. You can check the logs of the startup with:
+The installation and configuration will be finished when these log lines appear. The container will stop automatically afterwards:
 
 ```bash
-podman logs -f tempcloud2-nextcloud-prod-manager-1
-```
-
-The installation and configuration will be finished when these log lines appear:
-
-```bash
-Nextcloud configuration: completed
+Installer script: Configuration completed
 Nextcloud maintenance: mode off
 Maintenance mode already disabled
-Manager script: Setup completed successfully
-Nextcloud script: Completed
-Service: Starting cron
- 1/1 [============================] 100%time="2025-12-03T09:34:13Z" level=warning msg="process reaping disabled, not pid 1"
-time="2025-12-03T09:34:13Z" level=info msg="read crontab: /etc/crontabs/root"
+Installer script: Setup completed successfully
+Nextcloud setup completed. Installer container finished.
+    0 [>---------------------------]    0 [->--------------------------]    0 [--->------------------------]    0 [----->----------------------]    0 [------->--------------------]    0 [--------->------------------]
 ```
 
-Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
+Now the `manager` container will be started:
+
+```bash
+podman logs -f examplecompany-nextcloud-prod-manager-1
+```
+
+The last lines of the log output should look like this:
+
+```bash
+Checking Nextcloud directories
+Execute healthcheck once
+Service: Starting cron
+```
+
+From there on the `supercron` tool will output its log.
+
+Wait for `phpfpm` and `nginx` to be ready. Open your browser and enter your domain name. You should see the Nextcloud login page. You can now log in with the `admin` user and the password you set for the variable `NEXTCLOUD_ADMIN_PASSWORD` in the `configs/.env` file.
 
 > [!NOTE]  
 > Sometimes you need to login **twice** at the very first startup.
+
+The final `podman ps` output will look like this:
+
+```bash
+CONTAINER ID  IMAGE                           COMMAND               CREATED         STATUS                   PORTS                  NAMES
+29d755bf2a4d  docker.io/library/exampleco...                        34 minutes ago  Up 34 minutes (healthy)  6379/tcp               examplecompany-nextcloud-prod-valkey-1
+31e6257367e1  docker.io/clamav/clamav:1.5...                        34 minutes ago  Up 34 minutes            3310/tcp, 7357/tcp     examplecompany-nextcloud-prod-clamav-1
+dd227375136e  ghcr.io/nextcloud-releases/...                        34 minutes ago  Up 34 minutes (healthy)  3002/tcp               examplecompany-nextcloud-prod-whiteboard-1
+2da070fd3166  docker.io/library/postgres:...  postgres              34 minutes ago  Up 34 minutes (healthy)  5432/tcp               examplecompany-nextcloud-prod-postgres-1
+343ec463b816  docker.io/library/nginx:1.2...  nginx -g daemon o...  34 minutes ago  Up 34 minutes (healthy)  0.0.0.0:80->80/tcp...  examplecompany-nextcloud-prod-nginx-1
+d3fa28c652c6  docker.io/library/exampleco...  php-fpm               34 minutes ago  Up 34 minutes (healthy)  9000/tcp               examplecompany-nextcloud-prod-phpfpm-1
+ecc2cd2b5032  docker.io/library/exampleco...  sh /etc/entrypoin...  34 minutes ago  Up 34 minutes (healthy)  9000/tcp               examplecompany-nextcloud-prod-manager-1
+```
 
 ### Systemd Configuration
 
