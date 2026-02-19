@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
-# Set directory ownerships
-echo "Nextcloud directory ownerships: Starting"
+# Check existence of directories
+echo "Checking Nextcloud directories"
 if ! [ -n "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}" ] && ! [ -d "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}" ]; then
   echo "Error: PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER is not set or directory does not exist."
   exit 1
@@ -11,19 +11,10 @@ if ! [ -n "${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}" ] && ! [ -d "${PODMAN_NE
   echo "Error: PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER is not set or directory does not exist."
   exit 1
 fi
-echo "Nextcloud directory ownerships: Completed"
 
-# Configure the Nextcloud instance
-echo "Nextcloud script: Starting"
-if [ -n "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ] && [ -e "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}" ]; then
-  sh "${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}"
-else
-  echo "Error: PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER is not set or file does not exist."
-  exit 1
-fi
-echo "Nextcloud script: Completed"
+echo "Execute healthcheck once"
+php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}"
 
-# Start the services
 echo "Service: Starting cron"
 # Run supercronic in foreground
 supercronic -split-logs "${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}"

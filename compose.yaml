@@ -1,56 +1,166 @@
 ---
 name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}
+
 networks:
   backend:
     name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-network-backend
     driver: bridge
     enable_ipv4: true
     enable_ipv6: true
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
 services:
-  # https://hub.docker.com/r/clamav/clamav/
   clamav:
     hostname: clamav
     image: ${PODMAN_CLAMAV_IMAGE}
-    restart: always
+    restart: unless-stopped
     entrypoint: ["/init-unprivileged"]
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
       # private
       - ${PODMAN_CLAMAV_DATA_DIR_HOST}:${PODMAN_CLAMAV_DATA_DIR_CONTAINER}:Z
       - ${PODMAN_CLAMAV_LOG_DIR_HOST}:${PODMAN_CLAMAV_LOG_DIR_CONTAINER}:Z
-  manager:
-    hostname: manager
-    restart: always
+  # phpfpm_base:
+  #   networks:
+  #     - backend
+  #   user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+  #   userns_mode: "keep-id"
+  #   environment:
+  #     # Storage
+  #     - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+  #     # Nextcloud
+  #     - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
+  #     # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
+  #     - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+  #     - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
+  #     - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
+  #     - NC_default_timezone=${NEXTCLOUD_DEFAULT_TIMEZONE}
+  #     - NC_knowledgebaseenabled=${NEXTCLOUD_KNOWLEDGEBASE_ENABLED}
+  #     - NC_allow_user_to_change_display_name=${NEXTCLOUD_ALLOW_USER_TO_CHANGE_DISPLAY_NAME}
+  #     - NC_skeletondirectory=${NEXTCLOUD_SKELETON_DIRECTORY}
+  #     - NC_templatedirectory=${NEXTCLOUD_TEMPLATE_DIRECTORY}
+  #     - NC_remember_login_cookie_lifetime=${NEXTCLOUD_REMEMBER_LOGIN_COOKIE_LIFETIME}
+  #     - NC_session_lifetime=${NEXTCLOUD_SESSION_LIFETIME}
+  #     - NC_davstorage.request_timeout=${NEXTCLOUD_DAVSTORAGE_REQUEST_TIMEOUT}
+  #     - NC_carddav_sync_request_timeout=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TIMEOUT}
+  #     - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
+  #     - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
+  #     - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
+  #   build:
+  #     context: .
+  #     dockerfile: "${PWD}/compose/phpfpm/phpfpm"
+  #     args:
+  #       PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
+  #       PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+  #   depends_on:
+  #     clamav:
+  #       condition: service_started
+  #       required: true
+  #     manager:
+  #       condition: service_healthy
+  #       required: true
+  phpfpm:
+    hostname: phpfpm
+    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
+    restart: unless-stopped
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # shared
+      - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_HEALTHCHECK_FILE_HOST}:${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}:ro,z
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+    environment:
+      # Storage
+      - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+      # Nextcloud
+      - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
+      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+      - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
+      - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
+      - NC_default_timezone=${NEXTCLOUD_DEFAULT_TIMEZONE}
+      - NC_knowledgebaseenabled=${NEXTCLOUD_KNOWLEDGEBASE_ENABLED}
+      - NC_allow_user_to_change_display_name=${NEXTCLOUD_ALLOW_USER_TO_CHANGE_DISPLAY_NAME}
+      - NC_skeletondirectory=${NEXTCLOUD_SKELETON_DIRECTORY}
+      - NC_templatedirectory=${NEXTCLOUD_TEMPLATE_DIRECTORY}
+      - NC_remember_login_cookie_lifetime=${NEXTCLOUD_REMEMBER_LOGIN_COOKIE_LIFETIME}
+      - NC_session_lifetime=${NEXTCLOUD_SESSION_LIFETIME}
+      - NC_davstorage.request_timeout=${NEXTCLOUD_DAVSTORAGE_REQUEST_TIMEOUT}
+      - NC_carddav_sync_request_timeout=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TIMEOUT}
+      - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
+      - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
+      - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
+    build:
+      context: .
+      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
+      args:
+        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
+        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+    healthcheck:
+      test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}" || exit 1
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 4
+    depends_on:
+      clamav:
+        condition: service_started
+        required: true
+      manager:
+        condition: service_healthy
+        required: true
+  installer:
+    hostname: installer
+    restart: no
+    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
+    pull_policy: never
+    command: ["sh", "/etc/entrypoint.sh"]
+    networks:
+      - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
       # private
-      - ${PODMAN_MANAGER_CRON_ROOT_FILE_HOST}:${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}:ro,Z
-      - ${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}:ro,Z
-      - ${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_INSTALLER_ENTRYPOINT_SCRIPT_FILE_HOST}:${PODMAN_INSTALLER_ENTRYPOINT_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_HOST}:${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_HOST}:${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}:ro,Z
       # shared
       - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
       - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
       - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+    depends_on:
+      clamav:
+        condition: service_started
+        required: true
+      mariadb:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
+      mysql:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_MYSQL}
+      postgres:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
+      redis:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
+      whiteboard:
+        condition: service_healthy
+        required: true
+      valkey:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
       # Storage
-      - PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER=${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}
-      - PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}
-      - PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}
+      - PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER=${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}
+      - PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER=${PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}
       - PODMAN_PHPFPM_CONF_FILE_CONTAINER=${PODMAN_PHPFPM_CONF_FILE_CONTAINER}
       - PODMAN_PHPFPM_INI_FILE_CONTAINER=${PODMAN_PHPFPM_INI_FILE_CONTAINER}
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
@@ -127,106 +237,74 @@ services:
       - CLAMAV_AV_ICAP_TLS=${CLAMAV_AV_ICAP_TLS}
       - CLAMAV_AV_BLOCK_UNSCANNABLE=${CLAMAV_AV_BLOCK_UNSCANNABLE}
       - CLAMAV_AV_BLOCK_UNREACHABLE=${CLAMAV_AV_BLOCK_UNREACHABLE}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/manager/manager"
-      args:
-        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
-        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
-  # https://hub.docker.com/_/mariadb
-  mariadb:
-    hostname: mariadb
-    image: ${PODMAN_MARIADB_IMAGE}
-    restart: always
-    profiles:
-      - mariadb
+  manager:
+    hostname: manager
+    restart: unless-stopped
+    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
+    pull_policy: never
+    command: ["sh", "/etc/entrypoint.sh"]
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
       # private
-      - ${PODMAN_MARIADB_DATA_DIR_HOST}:${PODMAN_MARIADB_DATA_DIR_CONTAINER}:Z
-      # Uncomment if you want to use a custom mariadb.conf file:
-      # - ${PODMAN_MARIADB_CONF_FILE_HOST}:${PODMAN_MARIADB_CONF_FILE_CONTAINER}:ro,Z
-    environment:
-      - MARIADB_DATABASE=${MARIADB_DB}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
-      - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
-  # https://hub.docker.com/_/mysql
-  mysql:
-    hostname: mysql
-    image: ${PODMAN_MYSQL_IMAGE}
-    restart: always
-    profiles:
-      - mysql
-    networks:
-      - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
-    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
-    userns_mode: "keep-id"
-    volumes:
-      # private
-      - ${PODMAN_MYSQL_DATA_DIR_HOST}:${PODMAN_MYSQL_DATA_DIR_CONTAINER}:Z
-      # Uncomment if you want to use a custom mysql.conf file:
-      # - ${PODMAN_MYSQL_CONF_FILE_HOST}:${PODMAN_MYSQL_CONF_FILE_CONTAINER}:ro,Z
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
-  # https://hub.docker.com/r/nginxinc/nginx-unprivileged
-  nginx:
-    hostname: nginx
-    image: ${PODMAN_NGINX_IMAGE}
-    restart: always
-    networks:
-      - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
-    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
-    userns_mode: "keep-id"
-    volumes:
-      # private
-      - ${PODMAN_NGINX_CONF_DIR_HOST}:${PODMAN_NGINX_CONF_DIR_CONTAINER}:ro,Z
-      - ${PODMAN_SSL_DIR_HOST}:${PODMAN_NGINX_SSL_DIR_CONTAINER}:ro,Z
-      # shared
-      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
-      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
-    ports:
-      - 80:8080
-      # - 80:80/udp
-      - 443:8443
-      # - 443:443/udp
-  # https://hub.docker.com/_/php
-  phpfpm:
-    hostname: phpfpm
-    restart: always
-    networks:
-      - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
-    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
-    userns_mode: "keep-id"
-    volumes:
+      - ${PODMAN_MANAGER_CRON_ROOT_FILE_HOST}:${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_PHPFPM_HEALTHCHECK_FILE_HOST}:${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}:ro,z
       # shared
       - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
       - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
       - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+    healthcheck:
+      test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}" || exit 1
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 4
+    depends_on:
+      clamav:
+        condition: service_started
+        required: true
+      installer:
+        condition: service_completed_successfully
+        required: true
+      mariadb:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
+      mysql:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_MYSQL}
+      postgres:
+        condition: service_healthy
+        required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
+      redis:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
+      whiteboard:
+        condition: service_healthy
+        required: true
+      valkey:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
+      # Storage
+      - PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER=${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}
+      - PODMAN_PHPFPM_CONF_FILE_CONTAINER=${PODMAN_PHPFPM_CONF_FILE_CONTAINER}
+      - PODMAN_PHPFPM_INI_FILE_CONTAINER=${PODMAN_PHPFPM_INI_FILE_CONTAINER}
+      - PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER=${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}
+      - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+      - PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+      # Nextcloud
+      - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
+      - NEXTCLOUD_MAINTENANCE=${NEXTCLOUD_MAINTENANCE}
       - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
+      - NC_admin_user=${NEXTCLOUD_ADMIN_USER}
+      - NC_admin_password=${NEXTCLOUD_ADMIN_PASSWORD}
+      - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
       # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
       - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
@@ -242,24 +320,105 @@ services:
       - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
       - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
       - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
-      args:
-        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
-        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
-  # https://hub.docker.com/_/postgres
+      - NEXTCLOUD_APPS_INSTALLED=${NEXTCLOUD_APPS_INSTALLED}
+      - NEXTCLOUD_APPS_REMOVED=${NEXTCLOUD_APPS_REMOVED}
+      - NEXTCLOUD_APPS_ENABLED=${NEXTCLOUD_APPS_ENABLED}
+      - NEXTCLOUD_APPS_DISABLED=${NEXTCLOUD_APPS_DISABLED}
+      - NEXTCLOUD_REDIS_DBINDEX=${NEXTCLOUD_REDIS_DBINDEX}
+      - NEXTCLOUD_REDIS_TIMEOUT=${NEXTCLOUD_REDIS_TIMEOUT}
+      - NEXTCLOUD_REDIS_READ_TIMEOUT=${NEXTCLOUD_REDIS_READ_TIMEOUT}
+      - WHITEBOARD_JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
+  mariadb:
+    hostname: mariadb
+    image: ${PODMAN_MARIADB_IMAGE}
+    restart: unless-stopped
+    profiles:
+      - mariadb
+    networks:
+      - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # private
+      - ${PODMAN_MARIADB_DATA_DIR_HOST}:${PODMAN_MARIADB_DATA_DIR_CONTAINER}:Z
+      # Uncomment if you want to use a custom mariadb.conf file:
+      # - ${PODMAN_MARIADB_CONF_FILE_HOST}:${PODMAN_MARIADB_CONF_FILE_CONTAINER}:ro,Z
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized", "--mariadbupgrade"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      - MARIADB_DATABASE=${MARIADB_DB}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
+  mysql:
+    hostname: mysql
+    image: ${PODMAN_MYSQL_IMAGE}
+    restart: unless-stopped
+    profiles:
+      - mysql
+    networks:
+      - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # private
+      - ${PODMAN_MYSQL_DATA_DIR_HOST}:${PODMAN_MYSQL_DATA_DIR_CONTAINER}:Z
+      # Uncomment if you want to use a custom mysql.conf file:
+      # - ${PODMAN_MYSQL_CONF_FILE_HOST}:${PODMAN_MYSQL_CONF_FILE_CONTAINER}:ro,Z
+    healthcheck:
+      test: ["mysql", "--user=${MYSQL_USER}", "--password=${MYSQL_PASSWORD}", "--execute=SHOW TABLES;", "${MYSQL_DB}"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
+  nginx:
+    hostname: nginx
+    image: ${PODMAN_NGINX_IMAGE}
+    restart: unless-stopped
+    networks:
+      - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # private
+      - ${PODMAN_NGINX_CONF_DIR_HOST}:${PODMAN_NGINX_CONF_DIR_CONTAINER}:ro,Z
+      - ${PODMAN_SSL_DIR_HOST}:${PODMAN_NGINX_SSL_DIR_CONTAINER}:ro,Z
+      # shared
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+    ports:
+      - 80:8080
+      # - 80:80/udp
+      - 443:8443
+      # - 443:443/udp
+    healthcheck:
+      test: curl -sSfk "https://localhost:8443/status.php" | grep '"installed":true' | grep '"needsDbUpgrade":false' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      phpfpm:
+        condition: service_healthy
+        required: true
   postgres:
     hostname: postgres
     image: ${PODMAN_POSTGRES_IMAGE}
-    restart: always
+    restart: unless-stopped
     profiles:
       - postgres
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
@@ -271,18 +430,20 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  # https://hub.docker.com/_/redis
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
   redis:
     hostname: redis
     image: ${PODMAN_REDIS_IMAGE}
-    restart: always
+    restart: unless-stopped
     profiles:
       - redis
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     command: ["sh", "-c", "redis-server", "${PODMAN_REDIS_CONF_FILE_CONTAINER}"]
@@ -291,18 +452,20 @@ services:
       - ${PODMAN_REDIS_DATA_DIR_HOST}:${PODMAN_REDIS_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom redis.conf file:
       # - ${PODMAN_REDIS_CONF_FILE_HOST}:${PODMAN_REDIS_CONF_FILE_CONTAINER}:ro,Z
-  # https://hub.docker.com/r/valkey/valkey/
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
   valkey:
     hostname: valkey
     image: ${PODMAN_VALKEY_IMAGE}
-    restart: always
+    restart: unless-stopped
     profiles:
       - valkey
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     command: ["sh", "-c", "valkey-server", "${PODMAN_VALKEY_CONF_FILE_CONTAINER}"]
@@ -311,16 +474,25 @@ services:
       - ${PODMAN_VALKEY_DATA_DIR_HOST}:${PODMAN_VALKEY_DATA_DIR_CONTAINER}:Z
       # Uncomment if you want to use a custom valkey.conf file:
       # - ${PODMAN_VALKEY_CONF_FILE_HOST}:${PODMAN_VALKEY_CONF_FILE_CONTAINER}:ro,Z
-  # https://github.com/nextcloud/whiteboard
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
   whiteboard:
     hostname: whiteboard
     image: ${PODMAN_WHITEBOARD_IMAGE}
-    restart: always
+    restart: unless-stopped
     networks:
       - backend
-    labels:
-      - "io.podman.compose.project=${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}"
-      - "PODMAN_SYSTEMD_UNIT=podman-compose@${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}.service"
+    depends_on:
+      redis:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
+      valkey:
+        condition: service_healthy
+        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
       - STORAGE_STRATEGY=${WHITEBOARD_STORAGE_STRATEGY}
       - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}

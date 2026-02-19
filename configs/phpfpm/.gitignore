@@ -3,5 +3,6 @@
 
 # except:
 !.gitignore
-!nextcloud_default.ini
-!test
+!conf/*
+!ini/*
+!nextcloud_status.php

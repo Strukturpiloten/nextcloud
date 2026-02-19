@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# except:
+!.gitignore
+!nextcloud_config_default.php
+!nextcloud_setup_default.sh

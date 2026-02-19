@@ -6,14 +6,13 @@
 # Be cautious with your changes as the Nextcloud or related services may fail.
 # Wrongly configured databases will lead to a failed Nextcloud startup and therefore
 # also 'occ' commands will fail immediately. If you need to fix your database configuration
-# or other service configurations, please stop the 'manager' service first.
+# or other service configurations, please stop the Pod first.
 # You can then open your Nextcloud 'config.php' in a text editor and fix the settings there.
-# Afterwards you can start the 'manager' service and this script will run normally.
 #############################
 
 set -e
 
-echo "Manager script: Start configuration"
+echo "Installer script: Start configuration"
 
 # Configure the SQL database type
 if [ "${PODMAN_SQL_DATABASE}" = "mariadb" ]; then
@@ -119,11 +118,11 @@ echo "Nextcloud Setup: started"
 
 # Changing the database settings isn't working with the 'occ' command as it always needs a working database connection.
 # Therefore we will directly edit the config.php file.
-if [ -n "${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}" ]; then
-  echo "Run Nextcloud configuration script: ${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}"
-  php -c "${PHP_INI_DIR}/php.ini-development" "${PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}"
+if [ -n "${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}" ]; then
+  echo "Run Nextcloud configuration script: ${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}"
+  php -c "${PHP_INI_DIR}/php.ini-development" "${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}"
 else
-  echo "Error: PODMAN_MANAGER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER is not set"
+  echo "Error: PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER is not set"
   exit 1
 fi
 
@@ -204,7 +203,7 @@ php occ -n config:app:set --value "${CLAMAV_AV_BLOCK_UNREACHABLE}" --type=string
 
 # Other
 echo "Nextcloud system: Set maintenance window"
-# 01:00am UTC and 05:00am UTC
+# 01:00am UTC and 05:00am UTC 
 php occ -n config:system:set maintenance_window_start --type=integer --value=1
 
 echo "Nextcloud background jobs: cron"
@@ -223,7 +222,7 @@ php occ -n db:add-missing-primary-keys
 echo "Nextcloud maintenance: Start repair operations, can take quite some time"
 php occ -n maintenance:repair --include-expensive
 
-echo "Nextcloud configuration: completed"
+echo "Installer script: Configuration completed"
 
 # Set the maintenance mode according to the environment setting
 if [ "${NEXTCLOUD_MAINTENANCE}" = "off" ]; then
@@ -233,10 +232,5 @@ else
   echo "Nextcloud maintenance: mode on - as per environment setting"
 fi
 
-#############################
-# This script will be finished here and the entrypoint.sh will continue to start the cron service.
-# No further 'set' commands are required from here on as the entrypoint.sh will take care of it.
-#############################
-
-echo "Manager script: Setup completed successfully"
+echo "Installer script: Setup completed successfully"
 exit 0
