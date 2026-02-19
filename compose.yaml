@@ -103,8 +103,7 @@ services:
         PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
         PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
     healthcheck:
-      # test: "[ -f /dev/shm/nextcloud_status_healthy ]"
-      test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}"
+      test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}" || exit 1
       start_period: 10s
       interval: 10s
       timeout: 5s
@@ -118,10 +117,10 @@ services:
         required: true
   installer:
     hostname: installer
+    restart: no
     image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
     pull_policy: never
     command: ["sh", "/etc/entrypoint.sh"]
-    restart: no
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -241,6 +240,9 @@ services:
   manager:
     hostname: manager
     restart: unless-stopped
+    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
+    pull_policy: never
+    command: ["sh", "/etc/entrypoint.sh"]
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -248,15 +250,15 @@ services:
     volumes:
       # private
       - ${PODMAN_MANAGER_CRON_ROOT_FILE_HOST}:${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}:ro,Z
-      - ${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_CONTAINER}:ro,Z
+      - ${PODMAN_PHPFPM_HEALTHCHECK_FILE_HOST}:${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}:ro,z
       # shared
       - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
       - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
       - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
     healthcheck:
-      # test: "[ -f /dev/shm/nextcloud_status_healthy ]"
-      test: php -f "${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}"
+      test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}" || exit 1
       start_period: 10s
       interval: 10s
       timeout: 5s
@@ -289,10 +291,9 @@ services:
     environment:
       # Storage
       - PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER=${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}
-      - PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER=${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}
-      - PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER}
       - PODMAN_PHPFPM_CONF_FILE_CONTAINER=${PODMAN_PHPFPM_CONF_FILE_CONTAINER}
       - PODMAN_PHPFPM_INI_FILE_CONTAINER=${PODMAN_PHPFPM_INI_FILE_CONTAINER}
+      - PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER=${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
       - PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       # Nextcloud
@@ -327,12 +328,6 @@ services:
       - NEXTCLOUD_REDIS_TIMEOUT=${NEXTCLOUD_REDIS_TIMEOUT}
       - NEXTCLOUD_REDIS_READ_TIMEOUT=${NEXTCLOUD_REDIS_READ_TIMEOUT}
       - WHITEBOARD_JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/manager/manager"
-      args:
-        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
-        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
   mariadb:
     hostname: mariadb
     image: ${PODMAN_MARIADB_IMAGE}

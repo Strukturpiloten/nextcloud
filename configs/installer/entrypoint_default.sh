@@ -20,6 +20,5 @@ else
   echo "Error: PODMAN_INSTALLER_NEXTCLOUD_SETUP_SCRIPT_FILE_CONTAINER is not set or file does not exist."
   exit 1
 fi
-echo "Nextcloud script: Completed"
 
 echo "Nextcloud setup completed. Installer container finished."

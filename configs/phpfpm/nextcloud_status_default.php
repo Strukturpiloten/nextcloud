@@ -23,7 +23,10 @@ try {
         is_readable($nextcloud_status_file)
     ) {
         # Include the status.php file: $values variable will be available afterwards
+        # Prevent status.php from echoing output directly
+        ob_start();
         require $nextcloud_status_file;
+        ob_flush();
     } else {
         print("Nextcloud status script: Error: ".$nextcloud_status_file." file does not exist or is not readable\n");
         exit(1);
@@ -31,21 +34,14 @@ try {
     # Create status file for healthcheck
     $healthcheck_file = "/dev/shm/nextcloud_status_healthy";
     if ($values['installed'] && !$values['needsDbUpgrade']) {
-        # Healthy: Create file
-        $file = fopen($healthcheck_file, "w");
-        fclose($file);
+        # Healthy
+        exit(0);
     } else {
-        # Unhealthy: Delete file
-        if (file_exists($healthcheck_file)) {
-            unlink($healthcheck_file);
-        }
+        # Unhealthy
+        exit(1);
     }
-    exit(0);
 } catch (Exception $e) {
+    # Error and unhealthy
     print("Nextcloud status script: Error: " . $e->getMessage() . "\n");
-    # Unhealthy: Delete file
-    if (file_exists($healthcheck_file)) {
-        unlink($healthcheck_file);
-    }
     exit(1);
 }

@@ -13,7 +13,7 @@ if ! [ -n "${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}" ] && ! [ -d "${PODMAN_NE
 fi
 
 echo "Execute healthcheck once"
-php -f "${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}"
+php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}"
 
 echo "Service: Starting cron"
 # Run supercronic in foreground
