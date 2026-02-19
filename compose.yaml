@@ -8,7 +8,6 @@ networks:
     enable_ipv4: true
     enable_ipv6: true
 services:
-  # https://hub.docker.com/r/clamav/clamav/
   clamav:
     hostname: clamav
     image: ${PODMAN_CLAMAV_IMAGE}
@@ -22,6 +21,99 @@ services:
       # private
       - ${PODMAN_CLAMAV_DATA_DIR_HOST}:${PODMAN_CLAMAV_DATA_DIR_CONTAINER}:Z
       - ${PODMAN_CLAMAV_LOG_DIR_HOST}:${PODMAN_CLAMAV_LOG_DIR_CONTAINER}:Z
+  # phpfpm_base:
+  #   networks:
+  #     - backend
+  #   user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+  #   userns_mode: "keep-id"
+  #   environment:
+  #     # Storage
+  #     - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+  #     # Nextcloud
+  #     - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
+  #     # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
+  #     - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+  #     - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
+  #     - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
+  #     - NC_default_timezone=${NEXTCLOUD_DEFAULT_TIMEZONE}
+  #     - NC_knowledgebaseenabled=${NEXTCLOUD_KNOWLEDGEBASE_ENABLED}
+  #     - NC_allow_user_to_change_display_name=${NEXTCLOUD_ALLOW_USER_TO_CHANGE_DISPLAY_NAME}
+  #     - NC_skeletondirectory=${NEXTCLOUD_SKELETON_DIRECTORY}
+  #     - NC_templatedirectory=${NEXTCLOUD_TEMPLATE_DIRECTORY}
+  #     - NC_remember_login_cookie_lifetime=${NEXTCLOUD_REMEMBER_LOGIN_COOKIE_LIFETIME}
+  #     - NC_session_lifetime=${NEXTCLOUD_SESSION_LIFETIME}
+  #     - NC_davstorage.request_timeout=${NEXTCLOUD_DAVSTORAGE_REQUEST_TIMEOUT}
+  #     - NC_carddav_sync_request_timeout=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TIMEOUT}
+  #     - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
+  #     - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
+  #     - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
+  #   build:
+  #     context: .
+  #     dockerfile: "${PWD}/compose/phpfpm/phpfpm"
+  #     args:
+  #       PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
+  #       PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+  #   depends_on:
+  #     clamav:
+  #       condition: service_started
+  #       required: true
+  #     manager:
+  #       condition: service_healthy
+  #       required: true
+  phpfpm:
+    hostname: phpfpm
+    restart: unless-stopped
+    networks:
+      - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    volumes:
+      # shared
+      - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
+      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+    environment:
+      # Storage
+      - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+      # Nextcloud
+      - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
+      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+      - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
+      - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
+      - NC_default_timezone=${NEXTCLOUD_DEFAULT_TIMEZONE}
+      - NC_knowledgebaseenabled=${NEXTCLOUD_KNOWLEDGEBASE_ENABLED}
+      - NC_allow_user_to_change_display_name=${NEXTCLOUD_ALLOW_USER_TO_CHANGE_DISPLAY_NAME}
+      - NC_skeletondirectory=${NEXTCLOUD_SKELETON_DIRECTORY}
+      - NC_templatedirectory=${NEXTCLOUD_TEMPLATE_DIRECTORY}
+      - NC_remember_login_cookie_lifetime=${NEXTCLOUD_REMEMBER_LOGIN_COOKIE_LIFETIME}
+      - NC_session_lifetime=${NEXTCLOUD_SESSION_LIFETIME}
+      - NC_davstorage.request_timeout=${NEXTCLOUD_DAVSTORAGE_REQUEST_TIMEOUT}
+      - NC_carddav_sync_request_timeout=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TIMEOUT}
+      - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
+      - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
+      - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
+    build:
+      context: .
+      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
+      args:
+        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
+        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
+    healthcheck:
+      # test: "[ -f /dev/shm/nextcloud_status_healthy ]"
+      test: php -f "${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 4
+    depends_on:
+      clamav:
+        condition: service_started
+        required: true
+      manager:
+        condition: service_healthy
+        required: true
   installer:
     hostname: installer
     restart: no
@@ -203,30 +295,6 @@ services:
       - PODMAN_PHPFPM_INI_FILE_CONTAINER=${PODMAN_PHPFPM_INI_FILE_CONTAINER}
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
       - PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
-      # SQL databases
-      - PODMAN_SQL_DATABASE=${PODMAN_SQL_DATABASE}
-      # MariaDB
-      - MARIADB_HOST=${MARIADB_HOST}
-      - MARIADB_DB=${MARIADB_DB}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      # MySQL
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_DB=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      # Postgres
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      # Key-value databases
-      - PODMAN_KEY_VALUE_DATABASE=${PODMAN_KEY_VALUE_DATABASE}
-      # Valkey
-      - VALKEY_HOST=${VALKEY_HOST}
-      - VALKEY_PORT=${VALKEY_PORT}
-      - VALKEY_USER=${VALKEY_USER}
-      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
       # Nextcloud
       - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
       - NEXTCLOUD_MAINTENANCE=${NEXTCLOUD_MAINTENANCE}
@@ -259,29 +327,12 @@ services:
       - NEXTCLOUD_REDIS_TIMEOUT=${NEXTCLOUD_REDIS_TIMEOUT}
       - NEXTCLOUD_REDIS_READ_TIMEOUT=${NEXTCLOUD_REDIS_READ_TIMEOUT}
       - WHITEBOARD_JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
-      # Apps
-      - CLAMAV_AV_HOST=${CLAMAV_AV_HOST}
-      - CLAMAV_AV_PORT=${CLAMAV_AV_PORT}
-      - CLAMAV_AV_MODE=${CLAMAV_AV_MODE}
-      - CLAMAV_AV_SOCKET=${CLAMAV_AV_SOCKET}
-      - CLAMAV_AV_CMD_OPTIONS=${CLAMAV_AV_CMD_OPTIONS}
-      - CLAMAV_AV_INFECTION_ACTION=${CLAMAV_AV_INFECTION_ACTION}
-      - CLAMAV_AV_STREAM_MAX_LENGTH=${CLAMAV_AV_STREAM_MAX_LENGTH}
-      - CLAMAV_AV_MAX_FILE_SIZE=${CLAMAV_AV_MAX_FILE_SIZE}
-      - CLAMAV_AV_SCAN_FIRST_BYTES=${CLAMAV_AV_SCAN_FIRST_BYTES}
-      - CLAMAV_AV_ICAP_MODE=${CLAMAV_AV_ICAP_MODE}
-      - CLAMAV_AV_ICAP_REQUEST_SERVICE=${CLAMAV_AV_ICAP_REQUEST_SERVICE}
-      - CLAMAV_AV_ICAP_RESPONSE_HEADER=${CLAMAV_AV_ICAP_RESPONSE_HEADER}
-      - CLAMAV_AV_ICAP_TLS=${CLAMAV_AV_ICAP_TLS}
-      - CLAMAV_AV_BLOCK_UNSCANNABLE=${CLAMAV_AV_BLOCK_UNSCANNABLE}
-      - CLAMAV_AV_BLOCK_UNREACHABLE=${CLAMAV_AV_BLOCK_UNREACHABLE}
     build:
       context: .
       dockerfile: "${PWD}/compose/manager/manager"
       args:
         PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
         PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
-  # https://hub.docker.com/_/mariadb
   mariadb:
     hostname: mariadb
     image: ${PODMAN_MARIADB_IMAGE}
@@ -309,7 +360,6 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
-  # https://hub.docker.com/_/mysql
   mysql:
     hostname: mysql
     image: ${PODMAN_MYSQL_IMAGE}
@@ -337,7 +387,6 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
-  # https://hub.docker.com/r/nginxinc/nginx-unprivileged
   nginx:
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}
@@ -367,62 +416,6 @@ services:
       phpfpm:
         condition: service_healthy
         required: true
-  # https://hub.docker.com/_/php
-  phpfpm:
-    hostname: phpfpm
-    restart: unless-stopped
-    networks:
-      - backend
-    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
-    userns_mode: "keep-id"
-    volumes:
-      # shared
-      - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
-      - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
-      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
-      - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
-    environment:
-      # Storage
-      - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
-      # Nextcloud
-      - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
-      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
-      - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
-      - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
-      - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
-      - NC_default_timezone=${NEXTCLOUD_DEFAULT_TIMEZONE}
-      - NC_knowledgebaseenabled=${NEXTCLOUD_KNOWLEDGEBASE_ENABLED}
-      - NC_allow_user_to_change_display_name=${NEXTCLOUD_ALLOW_USER_TO_CHANGE_DISPLAY_NAME}
-      - NC_skeletondirectory=${NEXTCLOUD_SKELETON_DIRECTORY}
-      - NC_templatedirectory=${NEXTCLOUD_TEMPLATE_DIRECTORY}
-      - NC_remember_login_cookie_lifetime=${NEXTCLOUD_REMEMBER_LOGIN_COOKIE_LIFETIME}
-      - NC_session_lifetime=${NEXTCLOUD_SESSION_LIFETIME}
-      - NC_davstorage.request_timeout=${NEXTCLOUD_DAVSTORAGE_REQUEST_TIMEOUT}
-      - NC_carddav_sync_request_timeout=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TIMEOUT}
-      - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
-      - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
-      - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
-      args:
-        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
-        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
-    healthcheck:
-      # test: "[ -f /dev/shm/nextcloud_status_healthy ]"
-      test: php -f "${PODMAN_MANAGER_HEALTHCHECK_FILE_CONTAINER}"
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 4
-    depends_on:
-      clamav:
-        condition: service_started
-        required: true
-      manager:
-        condition: service_healthy
-        required: true
-  # https://hub.docker.com/_/postgres
   postgres:
     hostname: postgres
     image: ${PODMAN_POSTGRES_IMAGE}
@@ -448,7 +441,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-  # https://hub.docker.com/_/redis
   redis:
     hostname: redis
     image: ${PODMAN_REDIS_IMAGE}
@@ -471,7 +463,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-  # https://hub.docker.com/r/valkey/valkey/
   valkey:
     hostname: valkey
     image: ${PODMAN_VALKEY_IMAGE}
@@ -494,7 +485,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-  # https://github.com/nextcloud/whiteboard
   whiteboard:
     hostname: whiteboard
     image: ${PODMAN_WHITEBOARD_IMAGE}
