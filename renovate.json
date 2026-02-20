@@ -1,12 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:best-practices",
+    "docker:disable"
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update _IMAGE variables in .env.example",
+      "description": "Update *_IMAGE variables in .env.example",
       "datasourceTemplate": "docker",
       "managerFilePatterns": [
         "/^\\.env\\.example$/"
@@ -14,6 +15,76 @@
       "matchStrings": [
         "\\w+_IMAGE=(?<depName>[^:\\s]+):(?<currentValue>[^\\s]+)"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update NEXTCLOUD_VERSION variable in .env.example",
+      "datasourceTemplate": "docker",
+      "managerFilePatterns": [
+        "/^\\.env\\.example$/"
+      ],
+      "matchStrings": [
+        "NEXTCLOUD_VERSION=(?<currentValue>[^\\s]+)"
+      ],
+      "depNameTemplate": "github.com/nextcloud-releases/server"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Only allow patch updates for Docker images by default",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Allow NGINX minor/major upgrades only to versions with patch >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/nginxinc/nginx-unprivileged"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^\\d+\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow WHITEBOARD minor/major upgrades only to versions with patch >= 2",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "ghcr.io/nextcloud-releases/whiteboard"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
+    },
+    {
+      "description": "Allow NEXTCLOUD minor/major upgrades only to versions with patch >= 2",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "github.com/nextcloud-releases/server"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "major"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
     }
   ]
 }
