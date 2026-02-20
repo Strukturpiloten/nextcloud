@@ -19,14 +19,14 @@
     {
       "customType": "regex",
       "description": "Update NEXTCLOUD_VERSION variable in .env.example",
-      "datasourceTemplate": "docker",
+      "datasourceTemplate": "github-releases",
       "managerFilePatterns": [
         "/^\\.env\\.example$/"
       ],
       "matchStrings": [
         "NEXTCLOUD_VERSION=(?<currentValue>[^\\s]+)"
       ],
-      "depNameTemplate": "github.com/nextcloud-releases/server"
+      "depNameTemplate": "nextcloud/server"
     }
   ],
   "packageRules": [
@@ -42,19 +42,81 @@
       "enabled": false
     },
     {
-      "description": "Allow NGINX minor/major upgrades only to versions with patch >= 1",
+      "description": "Allow MARIADB minor/major upgrades only to version 11.4.x with patch >= 2",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/mariadb"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^11\\.4\\.([2-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow MYSQL minor/major upgrades only to version 8.4.x with patch >= 2",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/mysql"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^8\\.4\\.([2-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow NGINX minor/major upgrades only to version 1.x.x with patch >= 2",
       "matchFileNames": [
         ".env.example"
       ],
       "matchDepNames": [
         "docker.io/nginxinc/nginx-unprivileged"
       ],
-      "matchUpdateTypes": [
-        "minor",
-        "major"
+      "enabled": true,
+      "allowedVersions": "/^1.\\d+\\.([2-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow PHPFPM minor/major upgrades only to version 8.4.x with patch >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/php"
       ],
       "enabled": true,
-      "allowedVersions": "/^\\d+\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^8\\.4\\.([1-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow POSTGRES minor/major upgrades only to version 17.x with minor >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/postgres"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^17\\.([1-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow REDIS minor/major upgrades only to version 8.x.x with patch >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/redis"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^8\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
+      "description": "Allow VALKEY minor/major upgrades only to version 8.x.x with patch >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/valkey"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^8\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
     },
     {
       "description": "Allow WHITEBOARD minor/major upgrades only to versions with patch >= 2",
@@ -63,10 +125,6 @@
       ],
       "matchDepNames": [
         "ghcr.io/nextcloud-releases/whiteboard"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "major"
       ],
       "enabled": true,
       "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
@@ -77,11 +135,7 @@
         ".env.example"
       ],
       "matchDepNames": [
-        "github.com/nextcloud-releases/server"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "major"
+        "nextcloud/server"
       ],
       "enabled": true,
       "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
