@@ -9,10 +9,10 @@
       "description": "Update _IMAGE variables in .env.example",
       "datasourceTemplate": "docker",
       "managerFilePatterns": [
-        "/^.env.example$/"
+        "/^\\.env\\.example$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s(?:ENV|ARG) .+?_IMAGE=(?<currentValue>.+?)\\s"
+        "\\w+_IMAGE=(?<depName>[^:\\s]+):(?<currentValue>[^\\s]+)"
       ]
     }
   ]
