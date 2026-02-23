@@ -13,7 +13,7 @@
         "/^\\.env\\.example$/"
       ],
       "matchStrings": [
-        "\\w+_IMAGE=(?<depName>[^:\\s]+):(?<currentValue>[^\\s]+)"
+        "\\w+_IMAGE=(?<depName>[^:\\s]+):(?<currentValue>[^@\\s]+)(@(?<currentDigest>sha256:[a-f0-9]+))?"
       ]
     },
     {
