@@ -53,17 +53,6 @@
       "allowedVersions": "/^11\\.4\\.([2-9]|[1-9][0-9])(-.*)?$/"
     },
     {
-      "description": "Allow MYSQL minor/major upgrades only to version 8.4.x with patch >= 2",
-      "matchFileNames": [
-        ".env.example"
-      ],
-      "matchDepNames": [
-        "docker.io/mysql"
-      ],
-      "enabled": true,
-      "allowedVersions": "/^8\\.4\\.([2-9]|[1-9][0-9])(-.*)?$/"
-    },
-    {
       "description": "Allow NGINX minor/major upgrades only to version 1.x.x with patch >= 2",
       "matchFileNames": [
         ".env.example"

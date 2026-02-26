@@ -34,25 +34,6 @@ if [ "${PODMAN_SQL_DATABASE}" = "mariadb" ]; then
     echo "Error: PODMAN_SQL_DATABASE has value 'mariadb' but MARIADB_HOST, MARIADB_DB, MARIADB_USER, and MARIADB_PASSWORD are not all set"
     exit 1
   fi
-elif [ "${PODMAN_SQL_DATABASE}" = "mysql" ]; then
-  if [ -n "${MYSQL_HOST}" ] && [ -n "${MYSQL_DB}" ] && [ -n "${MYSQL_USER}" ] && [ -n "${MYSQL_PASSWORD}" ]; then
-    echo "MySQL will be used as database type"
-
-    export NC_dbtype="mysql"
-    export NC_dbhost="${MYSQL_HOST}"
-    export NC_dbname="${MYSQL_DB}"
-    export NC_dbuser="${MYSQL_USER}"
-    export NC_dbpassword="${MYSQL_PASSWORD}"
-
-    NC_dbtype="mysql"
-    NC_dbhost="${MYSQL_HOST}"
-    NC_dbname="${MYSQL_DB}"
-    NC_dbuser="${MYSQL_USER}"
-    NC_dbpassword="${MYSQL_PASSWORD}"
-  else
-    echo "Error: PODMAN_SQL_DATABASE has value 'mysql' but MYSQL_HOST, MYSQL_DB, MYSQL_USER, and MYSQL_PASSWORD are not all set"
-    exit 1
-  fi
 elif [ "${PODMAN_SQL_DATABASE}" = "postgres" ]; then
   if [ -n "${POSTGRES_HOST}" ] && [ -n "${POSTGRES_DB}" ] && [ -n "${POSTGRES_USER}" ] && [ -n "${POSTGRES_PASSWORD}" ]; then
     echo "PostgreSQL will be used as database type"

@@ -103,9 +103,6 @@ services:
       mariadb:
         condition: service_healthy
         required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
-      mysql:
-        condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_MYSQL}
       postgres:
         condition: service_healthy
         required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
@@ -133,11 +130,6 @@ services:
       - MARIADB_DB=${MARIADB_DB}
       - MARIADB_USER=${MARIADB_USER}
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      # MySQL
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_DB=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       # Postgres
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -234,9 +226,6 @@ services:
       mariadb:
         condition: service_healthy
         required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
-      mysql:
-        condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_MYSQL}
       postgres:
         condition: service_healthy
         required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
@@ -315,33 +304,6 @@ services:
       - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
-  mysql:
-    hostname: mysql
-    image: ${PODMAN_MYSQL_IMAGE}
-    restart: unless-stopped
-    profiles:
-      - mysql
-    networks:
-      - backend
-    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
-    userns_mode: "keep-id"
-    volumes:
-      # private
-      - ${PODMAN_MYSQL_DATA_DIR_HOST}:${PODMAN_MYSQL_DATA_DIR_CONTAINER}:Z
-      # Uncomment if you want to use a custom mysql.conf file:
-      # - ${PODMAN_MYSQL_CONF_FILE_HOST}:${PODMAN_MYSQL_CONF_FILE_CONTAINER}:ro,Z
-    healthcheck:
-      test: ["mysql", "--user=${MYSQL_USER}", "--password=${MYSQL_PASSWORD}", "--execute=SHOW TABLES;", "${MYSQL_DB}"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DB}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_AUTO_UPGRADE=${MYSQL_AUTO_UPGRADE}
   nginx:
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}

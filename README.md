@@ -342,14 +342,11 @@ mkdir -p configs/phpfpm/ini
 
 #  SQL database (choose your fighter)
 mkdir -p configs/mariadb
-mkdir -p configs/mysql
 mkdir -p configs/postgres
 
-# key-value database
+# key-value database (choose your fighter)
 mkdir -p configs/valkey
-
-# Key-value database
-mkdir -p configs/valkey
+mkdir -p configs/redis
 
 # Nextcloud scripts for the "manager" container
 mkdir -p configs/manager
@@ -365,12 +362,16 @@ cp nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcl
 cp nextcloud/configs/phpfpm/conf/zzz-www_default.conf configs/phpfpm/conf/zzz-www.conf
 cp nextcloud/configs/phpfpm/ini/nextcloud_default.ini configs/phpfpm/ini/nextcloud.ini
 
+# installer
+cp nextcloud/configs/installer/entrypoint_default.sh configs/installer/entrypoint.sh
+cp nextcloud/configs/installer/nextcloud_config_default.php configs/installer/nextcloud_config.php
+cp nextcloud/configs/installer/nextcloud_setup_default.sh configs/installer/nextcloud_setup.sh
+
 # manager
-cp nextcloud/configs/manager/nextcloud_config_default.php configs/manager/nextcloud_config.php
-cp nextcloud/configs/manager/nextcloud_setup_default.sh configs/manager/
+cp nextcloud/configs/manager/entrypoint_default.sh configs/manager/entrypoint.sh
 ```
 
-There are no default config files for MariaDB, MySQL, Postgres and Valkey, so you need to create them on your own if needed. Also check the environment variables containing path values in `configs/.env` that need to be uncommented and set accordingly. The path variable names end with `_FILE_HOST` and `_DIR_HOST`.
+There are no default config files for MariaDB, Postgres and Valkey, so you need to create them on your own if needed. Also check the environment variables containing path values in `configs/.env` that need to be uncommented and set accordingly. The path variable names end with `_FILE_HOST` and `_DIR_HOST`.
 
 You need to edit the Nginx `nextcloud.conf` file as it contains the default domain `cloud.example.com` that needs to be changed to your domain like this:
 
@@ -420,7 +421,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 We chose Postgres as SQL database for this example setup. Therefore we will use the `postgres` profile when starting the containers. You can use one of these profile names for the SQL database:
 
 - `mariadb`
-- `mysql`
 - `postgres`
 
 These profiles are available for the key-value database:
