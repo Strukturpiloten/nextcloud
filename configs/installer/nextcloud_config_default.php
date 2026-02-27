@@ -10,9 +10,7 @@ try {
     $env_vars = getenv();
 
     # Check for Nextcloud config.php file
-    if (
-        isset($env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'])
-    ) {
+    if (isset($env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'])) {
         $nextcloud_config_file = $env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'] . "/config/config.php";
     } else {
         print("Nextcloud configuration script: Error: PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER is not set\n");
@@ -31,33 +29,54 @@ try {
         exit(1);
     }
 
-    # Check if all environment variables are set
+    # Required environment variables
     $required_env_vars = [
         # SQL databse
+        'NC_dbtype',
         'NC_dbhost',
         'NC_dbname',
         'NC_dbuser',
         'NC_dbpassword',
-        # admin user
+        # Admin user
         'NC_admin_user',
         'NC_admin_password',
     ];
 
-    # Check if all required environment variables are set
+    # Check and set required environment variables
     foreach ($required_env_vars as $env_var) {
+        $config_name = ltrim($env_var, 'NC_');
         if (empty($env_vars[$env_var])) {
             print("Nextcloud configuration script: Error: Required environment variable ".$env_var." is not set\n");
             exit(1);
+        } else {
+            $CONFIG[$config_name] = $env_vars[$env_var];
         }
     }
 
-    # Change the settings with the environment variables
-    $CONFIG['dbhost'] = $env_vars['NC_dbhost'];
-    $CONFIG['dbname'] = $env_vars['NC_dbname'];
-    $CONFIG['dbuser'] = $env_vars['NC_dbuser'];
-    $CONFIG['dbpassword'] = $env_vars['NC_dbpassword'];
-    $CONFIG['admin_user'] = $env_vars['NC_admin_user'];
-    $CONFIG['admin_password'] = $env_vars['NC_admin_password'];
+    # Optional environment variables
+    $optional_env_vars = [
+        # Mail
+        'NC_mail_sendmailmode',
+        'NC_mail_smtpmode',
+        'NC_mail_smtpsecure',
+        'NC_mail_from_address',
+        'NC_mail_domain',
+        'NC_mail_smtphost',
+        'NC_mail_smtpport',
+        'NC_mail_smtpauth',
+        'NC_mail_smtpname',
+        'NC_mail_smtppassword',
+    ];
+
+    # Set/Unset optional environment variables
+    foreach ($optional_env_vars as $env_var) {
+        $config_name = ltrim($env_var, 'NC_');
+        if (!empty($env_vars[$env_var])) {
+            $CONFIG[$config_name] = $env_vars[$env_var];
+        } elseif (empty($env_vars[$env_var]) && array_key_exists($config_name, $CONFIG)) {
+            unset($CONFIG[$config_name]);
+        }
+    }
 
     # Set the to be written content
     $config_output = "<?php\n\n\$CONFIG = " . var_export($CONFIG, true) . ";\n";

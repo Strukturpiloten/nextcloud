@@ -233,8 +233,8 @@ Edit the `configs/.env` file and set at least the following variables:
 - All variables containing the following values:
   - `/your/absolute/path/to/`: Set the absolute paths to your data and config directories
   - `a_secure_password`: Use a separate secure password for each variable
-  - `domain.example.com`: Your domain name
-- `NEXTCLOUD_SMTP_`, `NEXTCLOUD_MAIL_` and `NEXTCLOUD_DEFAULT_` variables
+  - `nextcloud.example.com`: Your domain name
+- `NC_mail_` and `NEXTCLOUD_DEFAULT_` variables
 
 The following variables will **not** be changed for this example setup, because we will use the default config files where possible. These are the default values that are also present in our `.env` file. The `configs` path refers to `/mnt/nextcloud/nextcloud/configs` and **not** `/mnt/nextcloud/configs` as the environment variables are consumed be `podman compose` in the `nextcloud` directory. The default values are relative and not absolute paths:
 
@@ -284,13 +284,20 @@ NEXTCLOUD_ADMIN_PASSWORD=doNotUseThisSecretForNextcloudAdminUser
 NEXTCLOUD_DOMAIN=nextcloud.example.com
 NEXTCLOUD_TRUSTED_DOMAINS="localhost nextcloud.example.com"
 
-NEXTCLOUD_SMTP_HOST=nix
-NEXTCLOUD_SMTP_SECURE=nix
-NEXTCLOUD_SMTP_PORT=nix
-NEXTCLOUD_SMTP_AUTHTYPE=nix
-NEXTCLOUD_SMTP_NAME=nix
-NEXTCLOUD_MAIL_FROM_ADDRESS=nix
-NEXTCLOUD_MAIL_DOMAIN=nix
+# SMTP and mail
+NC_mail_sendmailmode='smtp'
+NC_mail_smtpmode='smtp'
+# Should be empty for STARTTLS. When using SSL set to 'ssl'
+NC_mail_smtpsecure=''
+# Emails will be send from NEXTCLOUD_MAIL_FROM_ADDRESS@NEXTCLOUD_MAIL_DOMAIN
+NC_mail_from_address='nextcloud'
+NC_mail_domain='nextcloud.example.com'
+# Configuration of the external SMTP server and account
+NC_mail_smtphost='smtp.example.com'
+NC_mail_smtpport='587'
+NC_mail_smtpauth=true
+NC_mail_smtpname='your_account_username'
+NC_mail_smtppassword='your_account_password'
 
 NEXTCLOUD_DEFAULT_LANGUAGE=de_DE
 NEXTCLOUD_DEFAULT_PHONE_REGION=DE
@@ -322,7 +329,7 @@ cp nextcloud/configs/nginx/conf/nextcloud_default.conf configs/nginx/conf/nextcl
 You need to edit the Nginx `nextcloud.conf` file as it contains the default domain `cloud.example.com` that needs to be changed to your domain like this:
 
 ```bash
-sed -i 's/cloud.example.com/yourdomain.example.com/g'  configs/nginx/conf/nextcloud.conf
+sed -i 's/cloud.example.com/nextcloud.example.com/g'  configs/nginx/conf/nextcloud.conf
 ```
 
 All other config files use some default values that can be used out of the box for a small setups.
@@ -376,7 +383,7 @@ There are no default config files for MariaDB, Postgres and Valkey, so you need 
 You need to edit the Nginx `nextcloud.conf` file as it contains the default domain `cloud.example.com` that needs to be changed to your domain like this:
 
 ```bash
-sed -i 's/cloud.example.com/yourdomain.example.com/g'  configs/nginx/conf/nextcloud.conf
+sed -i 's/cloud.example.com/nextcloud.example.com/g'  configs/nginx/conf/nextcloud.conf
 ```
 
 All other config files use some default values that can be used out of the box for a small setups.

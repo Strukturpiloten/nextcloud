@@ -8,9 +8,7 @@ try {
     $env_vars = getenv();
 
     # Check for Nextcloud status.php file
-    if (
-        isset($env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'])
-    ) {
+    if (isset($env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'])) {
         $nextcloud_status_file = $env_vars['PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER'] . "/status.php";
     } else {
         print("Nextcloud status script: Error: PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER is not set\n");
@@ -31,9 +29,9 @@ try {
         print("Nextcloud status script: Error: ".$nextcloud_status_file." file does not exist or is not readable\n");
         exit(1);
     }
-    # Create status file for healthcheck
-    $healthcheck_file = "/dev/shm/nextcloud_status_healthy";
-    if ($values['installed'] && !$values['needsDbUpgrade']) {
+    # Check health state
+    # If status.php fails and $values does not exist it will also be unhealthy
+    if (isset($values) && $values['installed'] && !$values['needsDbUpgrade']) {
         # Healthy
         exit(0);
     } else {
