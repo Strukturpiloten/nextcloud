@@ -1,5 +1,5 @@
 # Nextcloud cronjobs
 # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html
+# minute - hour - day of month - month - day of week
 */5  *  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
-
-# Don't delete the whitespaces before and after this comment!
+17  4  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ -n app:update --all

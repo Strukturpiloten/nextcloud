@@ -65,7 +65,7 @@ installed=false
 # Check if nextcloud is already installed
 if [ -f occ ]; then
   installed=true
-  version_installed=$(php occ --version | awk '{print $2}')
+  version_installed=$(php -f occ --version | awk '{print $2}')
 fi
 
 # Install Nextcloud
@@ -81,7 +81,7 @@ if [ "$installed" = false ]; then
   rm "nextcloud-${NEXTCLOUD_VERSION}.tar.bz2"
   echo "Nextcloud unpacking completed"
 
-  php occ maintenance:install \
+  php -f occ maintenance:install \
     -n \
     --data-dir "${NC_datadirectory}" \
     --database "${NC_dbtype}" \
@@ -117,98 +117,98 @@ set +e
 # TODO @TheRealBecks: Manual configuration of "trusted_domains" as a workaround for https://github.com/nextcloud/server/issues/49658
 # Reset trusted_domains
 echo "Nextcloud trusted_domains"
-php occ -n config:system:set trusted_domains --type=string --value="localhost"
+php -f occ -n config:system:set trusted_domains --type=string --value="localhost"
 # Set trusted_domains
 counter=0
 for domain in ${NEXTCLOUD_TRUSTED_DOMAINS}; do
-    php occ -n config:system:set trusted_domains ${counter} --type=string --value="${domain}"
+    php -f occ -n config:system:set trusted_domains ${counter} --type=string --value="${domain}"
     counter=$((counter + 1))
 done
 
 # Valkey
-php occ -n config:system:set 'redis' 'host' --type=string --value="${VALKEY_HOST}"
-php occ -n config:system:set 'redis' 'port' --type=string --value="${VALKEY_PORT}"
-php occ -n config:system:set 'redis' 'dbindex' --type=integer --value="${NEXTCLOUD_REDIS_DBINDEX}"
-php occ -n config:system:set 'redis' 'timeout' --type=float --value="${NEXTCLOUD_REDIS_TIMEOUT}"
-php occ -n config:system:set 'redis' 'read_timeout' --type=float --value="${NEXTCLOUD_REDIS_READ_TIMEOUT}"
-php occ -n config:system:set 'memcache.local' --type=string --value='\OC\Memcache\Redis'
-php occ -n config:system:set 'memcache.distributed' --type=string --value='\OC\Memcache\Redis'
-php occ -n config:system:set 'memcache.locking' --type=string --value='\OC\Memcache\Redis'
+php -f occ -n config:system:set 'redis' 'host' --type=string --value="${VALKEY_HOST}"
+php -f occ -n config:system:set 'redis' 'port' --type=string --value="${VALKEY_PORT}"
+php -f occ -n config:system:set 'redis' 'dbindex' --type=integer --value="${NEXTCLOUD_REDIS_DBINDEX}"
+php -f occ -n config:system:set 'redis' 'timeout' --type=float --value="${NEXTCLOUD_REDIS_TIMEOUT}"
+php -f occ -n config:system:set 'redis' 'read_timeout' --type=float --value="${NEXTCLOUD_REDIS_READ_TIMEOUT}"
+php -f occ -n config:system:set 'memcache.local' --type=string --value='\OC\Memcache\Redis'
+php -f occ -n config:system:set 'memcache.distributed' --type=string --value='\OC\Memcache\Redis'
+php -f occ -n config:system:set 'memcache.locking' --type=string --value='\OC\Memcache\Redis'
 
 # Whiteboard
 echo "Nextcloud app: Configure Whiteboard"
-php occ -n config:app:set whiteboard collabBackendUrl --value="https://${NEXTCLOUD_DOMAIN}/whiteboard"
-php occ -n -q config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET_KEY}"
+php -f occ -n config:app:set whiteboard collabBackendUrl --value="https://${NEXTCLOUD_DOMAIN}/whiteboard"
+php -f occ -n -q config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET_KEY}"
 
 # Apps: install, remove, enable, disable, update
 echo "Nextcloud app: Install Apps"
 for app in ${NEXTCLOUD_APPS_INSTALLED}; do
-    php occ -n app:install --verbose "${app}"
+    php -f occ -n app:install --verbose "${app}"
 done
 
 echo "Nextcloud app: Remove Apps"
 for app in ${NEXTCLOUD_APPS_REMOVED}; do
-    php occ -n app:remove --verbose "${app}"
+    php -f occ -n app:remove --verbose "${app}"
 done
 
 echo "Nextcloud app: Enable Apps"
 for app in ${NEXTCLOUD_APPS_ENABLED}; do
-    php occ -n app:enable --verbose "${app}"
+    php -f occ -n app:enable --verbose "${app}"
 done
 
 echo "Nextcloud app: Disable Apps"
 for app in ${NEXTCLOUD_APPS_DISABLED}; do
-    php occ -n app:disable --verbose "${app}"
+    php -f occ -n app:disable --verbose "${app}"
 done
 
 echo "Nextcloud app: Update Apps"
-php occ -n app:update --all
+php -f occ -n app:update --all
 
 # App: files_antivirus
 echo "Nextcloud app: Configure files_antivirus"
-php occ -n config:app:set --value "${CLAMAV_AV_HOST}" --type=string files_antivirus av_host
-php occ -n config:app:set --value "${CLAMAV_AV_PORT}" --type=string files_antivirus av_port
-php occ -n config:app:set --value "${CLAMAV_AV_MODE}" --type=string files_antivirus av_mode
-php occ -n config:app:set --value "${CLAMAV_AV_SOCKET}" --type=string files_antivirus av_socket
-php occ -n config:app:set --value "${CLAMAV_AV_CMD_OPTIONS}" --type=string files_antivirus av_cmd_options
-php occ -n config:app:set --value "${CLAMAV_AV_INFECTION_ACTION}" --type=string files_antivirus av_infected_action
-php occ -n config:app:set --value "${CLAMAV_AV_STREAM_MAX_LENGTH}" --type=string files_antivirus av_stream_max_length
-php occ -n config:app:set --value "${CLAMAV_AV_MAX_FILE_SIZE}" --type=string files_antivirus av_max_file_size
-php occ -n config:app:set --value "${CLAMAV_AV_SCAN_FIRST_BYTES}" --type=string files_antivirus av_scan_first_bytes
-php occ -n config:app:set --value "${CLAMAV_AV_ICAP_MODE}" --type=string files_antivirus av_icap_mode
-php occ -n config:app:set --value "${CLAMAV_AV_ICAP_REQUEST_SERVICE}" --type=string files_antivirus av_icap_request_service
-php occ -n config:app:set --value "${CLAMAV_AV_ICAP_RESPONSE_HEADER}" --type=string files_antivirus av_icap_response_header
-php occ -n config:app:set --value "${CLAMAV_AV_ICAP_TLS}" --type=string files_antivirus av_icap_tls
-php occ -n config:app:set --value "${CLAMAV_AV_BLOCK_UNSCANNABLE}" --type=string files_antivirus av_block_unscannable
-php occ -n config:app:set --value "${CLAMAV_AV_BLOCK_UNREACHABLE}" --type=string files_antivirus av_block_unreachable
+php -f occ -n config:app:set --value "${CLAMAV_AV_HOST}" --type=string files_antivirus av_host
+php -f occ -n config:app:set --value "${CLAMAV_AV_PORT}" --type=string files_antivirus av_port
+php -f occ -n config:app:set --value "${CLAMAV_AV_MODE}" --type=string files_antivirus av_mode
+php -f occ -n config:app:set --value "${CLAMAV_AV_SOCKET}" --type=string files_antivirus av_socket
+php -f occ -n config:app:set --value "${CLAMAV_AV_CMD_OPTIONS}" --type=string files_antivirus av_cmd_options
+php -f occ -n config:app:set --value "${CLAMAV_AV_INFECTION_ACTION}" --type=string files_antivirus av_infected_action
+php -f occ -n config:app:set --value "${CLAMAV_AV_STREAM_MAX_LENGTH}" --type=string files_antivirus av_stream_max_length
+php -f occ -n config:app:set --value "${CLAMAV_AV_MAX_FILE_SIZE}" --type=string files_antivirus av_max_file_size
+php -f occ -n config:app:set --value "${CLAMAV_AV_SCAN_FIRST_BYTES}" --type=string files_antivirus av_scan_first_bytes
+php -f occ -n config:app:set --value "${CLAMAV_AV_ICAP_MODE}" --type=string files_antivirus av_icap_mode
+php -f occ -n config:app:set --value "${CLAMAV_AV_ICAP_REQUEST_SERVICE}" --type=string files_antivirus av_icap_request_service
+php -f occ -n config:app:set --value "${CLAMAV_AV_ICAP_RESPONSE_HEADER}" --type=string files_antivirus av_icap_response_header
+php -f occ -n config:app:set --value "${CLAMAV_AV_ICAP_TLS}" --type=string files_antivirus av_icap_tls
+php -f occ -n config:app:set --value "${CLAMAV_AV_BLOCK_UNSCANNABLE}" --type=string files_antivirus av_block_unscannable
+php -f occ -n config:app:set --value "${CLAMAV_AV_BLOCK_UNREACHABLE}" --type=string files_antivirus av_block_unreachable
 
 # Other
 echo "Nextcloud system: Set maintenance window"
 # 01:00am UTC and 05:00am UTC 
-php occ -n config:system:set maintenance_window_start --type=integer --value=1
+php -f occ -n config:system:set maintenance_window_start --type=integer --value=1
 
 echo "Nextcloud background jobs: cron"
-php occ -n background:cron
+php -f occ -n background:cron
 
 # Add missing database configs
 echo "Nextcloud DB: Add missing columns"
-php occ -n db:add-missing-columns
+php -f occ -n db:add-missing-columns
 
 echo "Nextcloud DB: Add missing indices"
-php occ -n db:add-missing-indices
+php -f occ -n db:add-missing-indices
 
 echo "Nextcloud DB: Add missing primary keys"
-php occ -n db:add-missing-primary-keys
+php -f occ -n db:add-missing-primary-keys
 
 echo "Nextcloud maintenance: Start repair operations, can take quite some time"
-php occ -n maintenance:repair --include-expensive
+php -f occ -n maintenance:repair --include-expensive
 
 echo "Installer script: Configuration completed"
 
 # Set the maintenance mode according to the environment setting
 if [ "${NEXTCLOUD_MAINTENANCE}" = "off" ]; then
   echo "Nextcloud maintenance: mode off"
-  php occ -n maintenance:mode --off
+  php -f occ -n maintenance:mode --off
 else
   echo "Nextcloud maintenance: mode on - as per environment setting"
 fi
