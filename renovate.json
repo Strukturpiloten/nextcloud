@@ -108,6 +108,17 @@
       "allowedVersions": "/^8\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
     },
     {
+      "description": "Allow RUST minor/major upgrades only to version 1.93.x with patch >= 1",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDepNames": [
+        "docker.io/rust"
+      ],
+      "enabled": true,
+      "allowedVersions": "/^1\\.93\\.([1-9]|[1-9][0-9])(-.*)?$/"
+    },
+    {
       "description": "Allow WHITEBOARD minor/major upgrades only to versions with patch >= 2",
       "matchFileNames": [
         ".env.example"

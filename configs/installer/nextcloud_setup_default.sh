@@ -164,6 +164,10 @@ done
 echo "Nextcloud app: Update Apps"
 php -f occ -n app:update --all
 
+# App: notify_push
+echo "Nextcloud app: Configure notify_push"
+php -f occ -n notify_push:setup http://nginx/push
+
 # App: files_antivirus
 echo "Nextcloud app: Configure files_antivirus"
 php -f occ -n config:app:set --value "${CLAMAV_AV_HOST}" --type=string files_antivirus av_host
