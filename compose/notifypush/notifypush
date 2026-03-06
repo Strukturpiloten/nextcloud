@@ -6,7 +6,7 @@ FROM ${PODMAN_NOTIFYPUSH_RUST_IMAGE} AS build
 ARG NOTIFYPUSH_VERSION
 ARG NOTIFYPUSH_REPOSITORY
 
-WORKDIR /NOTIFYPUSH
+WORKDIR /notify_push
 
 RUN apk update && \
     apk upgrade && \
@@ -19,11 +19,11 @@ RUN git clone --branch "${NOTIFYPUSH_VERSION}" "${NOTIFYPUSH_REPOSITORY}" .; \
 
 FROM ${PODMAN_NOTIFYPUSH_ALPINE_IMAGE} AS final
 
-COPY --from=build /NOTIFYPUSH/target/x86_64-unknown-linux-musl/release/NOTIFYPUSH /
+COPY --from=build /notify_push/target/x86_64-unknown-linux-musl/release/notify_push /
 
 # Alpine guest user
 USER 405
 
 EXPOSE 7867
 
-CMD ["/NOTIFYPUSH", "/config/config.php"]
+CMD ["/notify_push", "/config/config.php"]
