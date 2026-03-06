@@ -441,15 +441,10 @@ services:
     depends_on:
       manager:
         condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
-    environment:
-      - STORAGE_STRATEGY=${WHITEBOARD_STORAGE_STRATEGY}
-      - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}
-      - JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
-      - REDIS_URL=redis://${VALKEY_HOST}
+        required: true
     build:
       context: .
-      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
+      dockerfile: "${PWD}/compose/notifypush/notifypush"
       args:
         PODMAN_NOTIFYPUSH_RUST_IMAGE: ${PODMAN_NOTIFYPUSH_RUST_IMAGE}
         PODMAN_NOTIFYPUSH_ALPINE_IMAGE: ${PODMAN_NOTIFYPUSH_ALPINE_IMAGE}
