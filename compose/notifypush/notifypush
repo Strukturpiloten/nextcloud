@@ -26,4 +26,4 @@ USER 405
 
 EXPOSE 7867
 
-CMD ["/notify_push", "/config/config.php"]
+CMD ["/notify_push", "/nextcloud/config/config.php"]

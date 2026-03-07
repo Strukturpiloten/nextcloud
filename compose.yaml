@@ -438,6 +438,9 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    volumes:
+      # shared
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:/nextcloud:z
     depends_on:
       manager:
         condition: service_healthy
