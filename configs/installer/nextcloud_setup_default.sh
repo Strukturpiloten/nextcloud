@@ -135,6 +135,9 @@ php occ -n config:system:set 'memcache.local' --type=string --value='\OC\Memcach
 php occ -n config:system:set 'memcache.distributed' --type=string --value='\OC\Memcache\Redis'
 php occ -n config:system:set 'memcache.locking' --type=string --value='\OC\Memcache\Redis'
 
+# Set domain for CLI, otherwise some apps will not work properly
+php occ -n config:system:set overwrite.cli.url --value="https://${NEXTCLOUD_DOMAIN}"
+
 # Whiteboard
 echo "Nextcloud app: Configure Whiteboard"
 php occ -n config:app:set whiteboard collabBackendUrl --value="https://${NEXTCLOUD_DOMAIN}/whiteboard"
