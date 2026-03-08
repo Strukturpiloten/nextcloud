@@ -438,6 +438,8 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
     volumes:
       # shared
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:/nextcloud:z
