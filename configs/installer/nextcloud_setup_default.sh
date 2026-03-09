@@ -177,9 +177,7 @@ done
 echo "Nextcloud app: Update Apps"
 php occ -n app:update --all
 
-# App: notify_push
-echo "Nextcloud app: Configure notify_push"
-php occ -n notify_push:setup http://nginx/push
+# App: notify_push: Will be configured by cron job later
 
 # App: files_antivirus
 echo "Nextcloud app: Configure files_antivirus"

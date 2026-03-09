@@ -1,5 +1,7 @@
 # Nextcloud cronjobs
 # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html
 # minute - hour - day of month - month - day of week
-*/5  *  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
-17  4  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ -n app:update --all
+*/5  *  *  *  * php -f "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php"
+17  4  *  *  * php "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ" -n app:update --all
+
+@reboot sleep 120 && php "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ" -n notify_push:setup "http://${NEXTCLOUD_DOMAIN}/push"
