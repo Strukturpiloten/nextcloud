@@ -3,3 +3,4 @@
 
 # except:
 !.gitignore
+!configure_notify_push_default.sh
