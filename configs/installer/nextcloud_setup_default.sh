@@ -125,6 +125,16 @@ for domain in ${NEXTCLOUD_TRUSTED_DOMAINS}; do
     counter=$((counter + 1))
 done
 
+# Same for trusted_proxies
+echo "Nextcloud trusted_proxies"
+php occ -n config:system:set trusted_proxies --type=string --value="127.0.0.1"
+# Set trusted_proxies
+counter=0
+for domain in ${NEXTCLOUD_TRUSTED_PROXIES}; do
+    php occ -n config:system:set trusted_proxies ${counter} --type=string --value="${domain}"
+    counter=$((counter + 1))
+done
+
 # Valkey
 php occ -n config:system:set 'redis' 'host' --type=string --value="${VALKEY_HOST}"
 php occ -n config:system:set 'redis' 'port' --type=string --value="${VALKEY_PORT}"
