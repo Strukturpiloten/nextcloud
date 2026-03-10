@@ -451,7 +451,7 @@ services:
       # shared
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:/nextcloud:z
     environment:
-      - NEXTCLOUD_URL="${NGINX_INTERNAL_URL}"
+      - NEXTCLOUD_URL=${NGINX_INTERNAL_URL}
     depends_on:
       manager:
         condition: service_healthy
