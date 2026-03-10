@@ -81,11 +81,11 @@ services:
     restart: no
     image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
     pull_policy: never
-    command: ["sh", "/etc/entrypoint.sh"]
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
+    command: ["sh", "/etc/entrypoint.sh"]
     volumes:
       # private
       - ${PODMAN_INSTALLER_ENTRYPOINT_SCRIPT_FILE_HOST}:${PODMAN_INSTALLER_ENTRYPOINT_SCRIPT_FILE_CONTAINER}:ro,Z
@@ -151,6 +151,7 @@ services:
       - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
       # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - NEXTCLOUD_TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
       - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
@@ -206,18 +207,19 @@ services:
     restart: unless-stopped
     image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
     pull_policy: never
-    command: ["sh", "/etc/entrypoint.sh"]
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
+    command: ["sh", "/etc/entrypoint.sh"]
     volumes:
       # private
+      - ${PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER}:ro,Z
       - ${PODMAN_MANAGER_CRON_ROOT_FILE_HOST}:${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}:ro,Z
       - ${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_HOST}:${PODMAN_MANAGER_ENTRYPOINT_SCRIPT_FILE_CONTAINER}:ro,Z
-      - ${PODMAN_PHPFPM_HEALTHCHECK_FILE_HOST}:${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}:ro,z
       # shared
       - ${PODMAN_PHPFPM_CONF_FILE_HOST}:${PODMAN_PHPFPM_CONF_FILE_CONTAINER}:ro,z
+      - ${PODMAN_PHPFPM_HEALTHCHECK_FILE_HOST}:${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}:ro,z
       - ${PODMAN_PHPFPM_INI_FILE_HOST}:${PODMAN_PHPFPM_INI_FILE_CONTAINER}:ro,z
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
       - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
@@ -251,12 +253,15 @@ services:
         required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
       # Storage
+      - PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER}
       - PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER=${PODMAN_MANAGER_CRON_ROOT_FILE_CONTAINER}
       - PODMAN_PHPFPM_CONF_FILE_CONTAINER=${PODMAN_PHPFPM_CONF_FILE_CONTAINER}
       - PODMAN_PHPFPM_INI_FILE_CONTAINER=${PODMAN_PHPFPM_INI_FILE_CONTAINER}
       - PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER=${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
       - PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
+      # Other
+      - NGINX_INTERNAL_URL=${NGINX_INTERNAL_URL}
       # Nextcloud
       - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
       - NEXTCLOUD_MAINTENANCE=${NEXTCLOUD_MAINTENANCE}
@@ -266,6 +271,7 @@ services:
       - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
       # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
+      - NEXTCLOUD_TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
       - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
@@ -432,3 +438,29 @@ services:
       - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}
       - JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
       - REDIS_URL=redis://${VALKEY_HOST}
+  notifypush:
+    hostname: notifypush
+    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-notifypush:latest
+    restart: unless-stopped
+    networks:
+      - backend
+    user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
+    userns_mode: "keep-id"
+    command: ["/notify_push", "--allow-self-signed", "/nextcloud/config/config.php"]
+    volumes:
+      # shared
+      - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:/nextcloud:z
+    environment:
+      - NEXTCLOUD_URL=${NGINX_INTERNAL_URL}
+    depends_on:
+      manager:
+        condition: service_healthy
+        required: true
+    build:
+      context: .
+      dockerfile: "${PWD}/compose/notifypush/notifypush"
+      args:
+        PODMAN_NOTIFYPUSH_RUST_IMAGE: ${PODMAN_NOTIFYPUSH_RUST_IMAGE}
+        PODMAN_NOTIFYPUSH_ALPINE_IMAGE: ${PODMAN_NOTIFYPUSH_ALPINE_IMAGE}
+        NOTIFYPUSH_REPOSITORY: ${NOTIFYPUSH_REPOSITORY}
+        NOTIFYPUSH_VERSION: ${NOTIFYPUSH_VERSION}

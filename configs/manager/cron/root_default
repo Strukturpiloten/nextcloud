@@ -1,5 +1,13 @@
 # Nextcloud cronjobs
 # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html
+# The specific cron timers can be found here: https://docs.rs/cronexpr/latest/cronexpr/
 # minute - hour - day of month - month - day of week
-*/5  *  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php
-17  4  *  *  * php -f ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ -n app:update --all
+
+# Official Nextcloud cron file
+*/5  *  *  *  * php -f "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/cron.php"
+
+# Update all Nextcloud apps
+17  4  *  *  * php "${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}/occ" -n app:update --all
+
+# Nextcloud notify_push setup
+* * * * * /usr/bin/env sh "${PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER}"
