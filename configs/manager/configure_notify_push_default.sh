@@ -26,9 +26,9 @@ case "${curl_rc}" in
         ;;
     esac
     ;;
-  1)
+  *)
     # nginx endpoint is not reachable, cannot set up notify_push
     # This can also happen when the pod still starts and nginx has not yet been started
-    exit 1
+    exit "${curl_rc}"
     ;;
 esac
