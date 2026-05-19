@@ -3,5 +3,6 @@
 
 # except:
 !.gitignore
+!entrypoint_default.sh
 !nextcloud_config_default.php
 !nextcloud_setup_default.sh
