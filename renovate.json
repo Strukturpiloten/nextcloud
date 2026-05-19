@@ -31,7 +31,7 @@
   ],
   "packageRules": [
     {
-      "description": "Only allow patch updates for Docker images by default",
+      "description": "Only allow patch updates in .env.example",
       "matchFileNames": [
         ".env.example"
       ],
@@ -42,7 +42,18 @@
       "enabled": false
     },
     {
-      "description": "Allow MARIADB minor/major upgrades only to version 11.4.x with patch >= 2",
+      "description": "Treat numeric distro suffixes like alpine3.22 and ubi9 as updatable while keeping the image variant stable",
+      "matchFileNames": [
+        ".env.example"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchCurrentValue": "/-(?:[a-z-]*(?:alpine|ubi))\\d+(?:\\.\\d+)?$/",
+      "versioning": "regex:^(?<major>\\d+)(?:\\.(?<minor>\\d+))?(?:\\.(?<patch>\\d+))?(?:-(?<compatibility>[a-z-]*(?:alpine|ubi))(?<build>\\d+)(?:\\.(?<revision>\\d+))?)?$"
+    },
+    {
+      "description": "Allow same-major.same-minor updates once the patch floor is >= 2",
       "matchFileNames": [
         ".env.example"
       ],
@@ -50,10 +61,10 @@
         "docker.io/mariadb"
       ],
       "enabled": true,
-      "allowedVersions": "/^11\\.4\\.([2-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^{{{major}}}\\.{{{minor}}}\\.(?:[2-9]|[1-9]\\d+)(?:-.*)?$/"
     },
     {
-      "description": "Allow NGINX minor/major upgrades only to version 1.x.x with patch >= 2",
+      "description": "Allow same-major updates once the patch floor is >= 2",
       "matchFileNames": [
         ".env.example"
       ],
@@ -61,21 +72,22 @@
         "docker.io/nginxinc/nginx-unprivileged"
       ],
       "enabled": true,
-      "allowedVersions": "/^1.\\d+\\.([2-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^{{{major}}}\\.\\d+\\.(?:[2-9]|[1-9]\\d+)(?:-.*)?$/"
     },
     {
-      "description": "Allow PHPFPM minor/major upgrades only to version 8.4.x with patch >= 1",
+      "description": "Allow same-major.same-minor updates once the patch floor is >= 1",
       "matchFileNames": [
         ".env.example"
       ],
       "matchDepNames": [
-        "docker.io/php"
+        "docker.io/php",
+        "docker.io/rust"
       ],
       "enabled": true,
-      "allowedVersions": "/^8\\.4\\.([1-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^{{{major}}}\\.{{{minor}}}\\.[1-9]\\d*(?:-.*)?$/"
     },
     {
-      "description": "Allow POSTGRES minor/major upgrades only to version 17.x with minor >= 1",
+      "description": "Allow same-major updates once the minor floor is >= 1",
       "matchFileNames": [
         ".env.example"
       ],
@@ -83,62 +95,31 @@
         "docker.io/postgres"
       ],
       "enabled": true,
-      "allowedVersions": "/^17\\.([1-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^{{{major}}}\\.[1-9]\\d*(?:-.*)?$/"
     },
     {
-      "description": "Allow REDIS minor/major upgrades only to version 8.x.x with patch >= 1",
+      "description": "Allow same-major updates once the patch floor is >= 1",
       "matchFileNames": [
         ".env.example"
       ],
       "matchDepNames": [
-        "docker.io/redis"
-      ],
-      "enabled": true,
-      "allowedVersions": "/^8\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
-    },
-    {
-      "description": "Allow VALKEY minor/major upgrades only to version 8.x.x with patch >= 1",
-      "matchFileNames": [
-        ".env.example"
-      ],
-      "matchDepNames": [
+        "docker.io/redis",
         "docker.io/valkey"
       ],
       "enabled": true,
-      "allowedVersions": "/^8\\.\\d+\\.([1-9]|[1-9][0-9])(-.*)?$/"
+      "allowedVersions": "/^{{{major}}}\\.\\d+\\.[1-9]\\d*(?:-.*)?$/"
     },
     {
-      "description": "Allow RUST minor/major upgrades only to version 1.93.x with patch >= 1",
+      "description": "Allow releases once the patch floor is >= 2",
       "matchFileNames": [
         ".env.example"
       ],
       "matchDepNames": [
-        "docker.io/rust"
-      ],
-      "enabled": true,
-      "allowedVersions": "/^1\\.93\\.([1-9]|[1-9][0-9])(-.*)?$/"
-    },
-    {
-      "description": "Allow WHITEBOARD minor/major upgrades only to versions with patch >= 2",
-      "matchFileNames": [
-        ".env.example"
-      ],
-      "matchDepNames": [
-        "ghcr.io/nextcloud-releases/whiteboard"
-      ],
-      "enabled": true,
-      "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
-    },
-    {
-      "description": "Allow NEXTCLOUD minor/major upgrades only to versions with patch >= 2",
-      "matchFileNames": [
-        ".env.example"
-      ],
-      "matchDepNames": [
+        "ghcr.io/nextcloud-releases/whiteboard",
         "nextcloud/server"
       ],
       "enabled": true,
-      "allowedVersions": "/^v?\\d+\\.\\d+\\.([2-9]|[1-9][0-9])$/"
+      "allowedVersions": "/^v?\\d+\\.\\d+\\.(?:[2-9]|[1-9]\\d+)$/"
     }
   ]
 }
