@@ -1,12 +1,16 @@
 ---
 name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}
-
 networks:
   backend:
     name: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-network-backend
     driver: bridge
     enable_ipv4: true
     enable_ipv6: true
+{{- if .UseReverseProxy }}
+  reverse-proxy:
+    name: {{ printf "%q" .ReverseProxyNetworkName }}
+    external: true
+{{- end }}
 services:
   clamav:
     hostname: clamav
@@ -42,7 +46,6 @@ services:
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
       # Nextcloud
       - NC_dbpersistent=${NEXTCLOUD_PERSISTENT_DATABASE_CONNECTION}
-      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       - NC_default_language=${NEXTCLOUD_DEFAULT_LANGUAGE}
       - NC_default_phone_region=${NEXTCLOUD_DEFAULT_PHONE_REGION}
@@ -73,7 +76,7 @@ services:
         required: true
   installer:
     hostname: installer
-    restart: no
+    restart: "no"
     image: ${PODMAN_NEXTCLOUDPHPFPM_IMAGE}
     pull_policy: ${PODMAN_NEXTCLOUDPHPFPM_PULL_POLICY}
     networks:
@@ -95,21 +98,15 @@ services:
       clamav:
         condition: service_started
         required: true
-      mariadb:
+      {{ .DatabaseSQLService }}:
         condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
-      postgres:
+        required: true
+      {{ .DatabaseKeyValueService }}:
         condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
-      redis:
-        condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
+        required: true
       whiteboard:
         condition: service_healthy
         required: true
-      valkey:
-        condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
       # Storage
       - PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER=${PODMAN_INSTALLER_NEXTCLOUD_CONFIG_SCRIPT_FILE_CONTAINER}
@@ -119,24 +116,22 @@ services:
       - PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
       - PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
       # SQL databases
-      - PODMAN_SQL_DATABASE=${PODMAN_SQL_DATABASE}
+      - PODMAN_SQL_DATABASE=${DATABASE_SQL_SERVICE}
       # MariaDB
-      - MARIADB_HOST=${MARIADB_HOST}
-      - MARIADB_DB=${MARIADB_DB}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_HOST=${DATABASE_SQL_HOST}
+      - MARIADB_DB=${DATABASE_SQL_NAME}
+      - MARIADB_USER=${DATABASE_SQL_USER}
+      - MARIADB_PASSWORD=${DATABASE_SQL_PASSWORD}
       # Postgres
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${DATABASE_SQL_HOST}
+      - POSTGRES_DB=${DATABASE_SQL_NAME}
+      - POSTGRES_USER=${DATABASE_SQL_USER}
+      - POSTGRES_PASSWORD=${DATABASE_SQL_PASSWORD}
       # Key-value databases
-      - PODMAN_KEY_VALUE_DATABASE=${PODMAN_KEY_VALUE_DATABASE}
+      - PODMAN_KEY_VALUE_DATABASE=${DATABASE_KEY_VALUE_SERVICE}
       # Valkey
-      - VALKEY_HOST=${VALKEY_HOST}
-      - VALKEY_PORT=${VALKEY_PORT}
-      - VALKEY_USER=${VALKEY_USER}
-      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
+      - VALKEY_HOST=${DATABASE_KEY_VALUE_HOST}
+      - VALKEY_PORT=${DATABASE_KEY_VALUE_PORT}
       # Nextcloud
       - NEXTCLOUD_VERSION=${NEXTCLOUD_VERSION}
       - NEXTCLOUD_MAINTENANCE=${NEXTCLOUD_MAINTENANCE}
@@ -144,7 +139,6 @@ services:
       - NC_admin_user=${NEXTCLOUD_ADMIN_USER}
       - NC_admin_password=${NEXTCLOUD_ADMIN_PASSWORD}
       - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
-      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
@@ -231,21 +225,15 @@ services:
       installer:
         condition: service_completed_successfully
         required: true
-      mariadb:
+      {{ .DatabaseSQLService }}:
         condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_MARIADB}
-      postgres:
+        required: true
+      {{ .DatabaseKeyValueService }}:
         condition: service_healthy
-        required: ${PODMAN_SQL_DATABASE_REQUIRED_POSTGRES}
-      redis:
-        condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
+        required: true
       whiteboard:
         condition: service_healthy
         required: true
-      valkey:
-        condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
     environment:
       # Storage
       - PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER=${PODMAN_MANAGER_CONFIGURE_NOTIFY_PUSH_SCRIPT_FILE_CONTAINER}
@@ -264,7 +252,6 @@ services:
       - NC_admin_user=${NEXTCLOUD_ADMIN_USER}
       - NC_admin_password=${NEXTCLOUD_ADMIN_PASSWORD}
       - NEXTCLOUD_DOMAIN=${NEXTCLOUD_DOMAIN}
-      # - NC_trusted_domains=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS}
       - NEXTCLOUD_TRUSTED_PROXIES=${NEXTCLOUD_TRUSTED_PROXIES}
       - NC_datadirectory=${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}
@@ -291,12 +278,11 @@ services:
       - NEXTCLOUD_APPS_REMOVED=${NEXTCLOUD_APPS_REMOVED}
       - NEXTCLOUD_APPS_ENABLED=${NEXTCLOUD_APPS_ENABLED}
       - NEXTCLOUD_APPS_DISABLED=${NEXTCLOUD_APPS_DISABLED}
+{{- if .UseMariaDB }}
   mariadb:
     hostname: mariadb
     image: ${PODMAN_MARIADB_IMAGE}
     restart: unless-stopped
-    profiles:
-      - mariadb
     networks:
       - backend
     userns_mode: "keep-id:uid=999,gid=999"
@@ -312,31 +298,39 @@ services:
       timeout: 5s
       retries: 3
     environment:
-      - MARIADB_DATABASE=${MARIADB_DB}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_DATABASE=${DATABASE_SQL_NAME}
+      - MARIADB_USER=${DATABASE_SQL_USER}
+      - MARIADB_PASSWORD=${DATABASE_SQL_PASSWORD}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_AUTO_UPGRADE=${MARIADB_AUTO_UPGRADE}
+{{- end }}
   nginx:
     hostname: nginx
     image: ${PODMAN_NGINX_IMAGE}
     restart: unless-stopped
     networks:
       - backend
+{{- if .UseReverseProxy }}
+      - reverse-proxy
+{{- end }}
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
     userns_mode: "keep-id"
     volumes:
       # private
       - ${PODMAN_NGINX_CONF_DIR_HOST}:${PODMAN_NGINX_CONF_DIR_CONTAINER}:ro,Z
+{{- if not .UseReverseProxy }}
       - ${PODMAN_SSL_DIR_HOST}:${PODMAN_NGINX_SSL_DIR_CONTAINER}:ro,Z
+{{- end }}
       # shared
       - ${PODMAN_NEXTCLOUD_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}:z
       - ${PODMAN_NEXTCLOUD_USER_DATA_DIR_HOST}:${PODMAN_NEXTCLOUD_USER_DATA_DIR_CONTAINER}:z
+{{- if not .UseReverseProxy }}
     ports:
       - 80:8080
       # - 80:80/udp
       - 443:8443
       # - 443:443/udp
+{{- end }}
     healthcheck:
       test: curl -sSfk "https://localhost:8443/status.php" | grep '"installed":true' | grep '"needsDbUpgrade":false' || exit 1
       interval: 10s
@@ -346,12 +340,11 @@ services:
       phpfpm:
         condition: service_healthy
         required: true
+{{- if .UsePostgreSQL }}
   postgres:
     hostname: postgres
     image: ${PODMAN_POSTGRES_IMAGE}
     restart: unless-stopped
-    profiles:
-      - postgres
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -362,21 +355,21 @@ services:
       # Uncomment if you want to use a custom postgresql.conf file:
       # - ${PODMAN_POSTGRES_CONF_FILE_HOST}:${PODMAN_POSTGRES_CONF_FILE_CONTAINER}:ro,Z
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DATABASE_SQL_NAME}
+      - POSTGRES_USER=${DATABASE_SQL_USER}
+      - POSTGRES_PASSWORD=${DATABASE_SQL_PASSWORD}
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      test: ["CMD", "pg_isready", "-U", "${DATABASE_SQL_USER}", "-d", "${DATABASE_SQL_NAME}"]
       start_period: 10s
       interval: 10s
       timeout: 5s
       retries: 3
+{{- end }}
+{{- if .UseRedis }}
   redis:
     hostname: redis
     image: ${PODMAN_REDIS_IMAGE}
     restart: unless-stopped
-    profiles:
-      - redis
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -393,12 +386,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+{{- end }}
+{{- if .UseValkey }}
   valkey:
     hostname: valkey
     image: ${PODMAN_VALKEY_IMAGE}
     restart: unless-stopped
-    profiles:
-      - valkey
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -415,6 +408,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+{{- end }}
   whiteboard:
     hostname: whiteboard
     image: ${PODMAN_WHITEBOARD_IMAGE}
@@ -422,17 +416,14 @@ services:
     networks:
       - backend
     depends_on:
-      redis:
+      {{ .DatabaseKeyValueService }}:
         condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_REDIS}
-      valkey:
-        condition: service_healthy
-        required: ${PODMAN_KEY_VALUE_DATABASE_REQUIRED_VALKEY}
+        required: true
     environment:
       - STORAGE_STRATEGY=${WHITEBOARD_STORAGE_STRATEGY}
       - NEXTCLOUD_URL=https://${NEXTCLOUD_DOMAIN}
       - JWT_SECRET_KEY=${WHITEBOARD_JWT_SECRET_KEY}
-      - REDIS_URL=redis://${VALKEY_HOST}
+      - REDIS_URL=redis://${DATABASE_KEY_VALUE_HOST}
   notifypush:
     hostname: notifypush
     image: ${PODMAN_NEXTCLOUDNOTIFYPUSH_IMAGE}
