@@ -75,17 +75,6 @@
       "allowedVersions": "/^{{{major}}}\\.\\d+\\.(?:[2-9]|[1-9]\\d+)(?:-.*)?$/"
     },
     {
-      "description": "Allow same-major.same-minor updates once the patch floor is >= 1",
-      "matchFileNames": [
-        ".env.example"
-      ],
-      "matchDepNames": [
-        "docker.io/rust"
-      ],
-      "enabled": true,
-      "allowedVersions": "/^{{{major}}}\\.{{{minor}}}\\.[1-9]\\d*(?:-.*)?$/"
-    },
-    {
       "description": "Allow same-major updates once the minor floor is >= 1",
       "matchFileNames": [
         ".env.example"
