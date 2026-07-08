@@ -435,7 +435,8 @@ services:
       - REDIS_URL=redis://${VALKEY_HOST}
   notifypush:
     hostname: notifypush
-    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-notifypush:latest
+    image: ${PODMAN_NEXTCLOUDNOTIFYPUSH_IMAGE}
+    pull_policy: ${PODMAN_NEXTCLOUDNOTIFYPUSH_PULL_POLICY}
     restart: unless-stopped
     networks:
       - backend
@@ -451,11 +452,3 @@ services:
       manager:
         condition: service_healthy
         required: true
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/notifypush/notifypush"
-      args:
-        PODMAN_NOTIFYPUSH_RUST_IMAGE: ${PODMAN_NOTIFYPUSH_RUST_IMAGE}
-        PODMAN_NOTIFYPUSH_ALPINE_IMAGE: ${PODMAN_NOTIFYPUSH_ALPINE_IMAGE}
-        NOTIFYPUSH_REPOSITORY: ${NOTIFYPUSH_REPOSITORY}
-        NOTIFYPUSH_VERSION: ${NOTIFYPUSH_VERSION}
