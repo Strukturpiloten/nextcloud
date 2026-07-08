@@ -80,7 +80,6 @@
         ".env.example"
       ],
       "matchDepNames": [
-        "docker.io/php",
         "docker.io/rust"
       ],
       "enabled": true,

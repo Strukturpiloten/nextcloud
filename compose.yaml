@@ -23,7 +23,8 @@ services:
       - ${PODMAN_CLAMAV_LOG_DIR_HOST}:${PODMAN_CLAMAV_LOG_DIR_CONTAINER}:Z
   phpfpm:
     hostname: phpfpm
-    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
+    image: ${PODMAN_NEXTCLOUDPHPFPM_IMAGE}
+    pull_policy: ${PODMAN_NEXTCLOUDPHPFPM_PULL_POLICY}
     restart: unless-stopped
     networks:
       - backend
@@ -57,12 +58,6 @@ services:
       - NC_carddav_sync_request_truncation=${NEXTCLOUD_CARDDAV_SYNC_REQUEST_TRUNCATION}
       - NC_session_relaxed_expiry=${NEXTCLOUD_SESSION_RELAXED_EXPIRY}
       - NC_session_keepalive=${NEXTCLOUD_SESSION_KEEPALIVE}
-    build:
-      context: .
-      dockerfile: "${PWD}/compose/phpfpm/phpfpm"
-      args:
-        PODMAN_PHPFPM_IMAGE: ${PODMAN_PHPFPM_IMAGE}
-        PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER: ${PODMAN_NEXTCLOUD_DATA_DIR_CONTAINER}
     healthcheck:
       test: php -f "${PODMAN_PHPFPM_HEALTHCHECK_FILE_CONTAINER}" || exit 1
       start_period: 10s
@@ -79,8 +74,8 @@ services:
   installer:
     hostname: installer
     restart: no
-    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
-    pull_policy: never
+    image: ${PODMAN_NEXTCLOUDPHPFPM_IMAGE}
+    pull_policy: ${PODMAN_NEXTCLOUDPHPFPM_PULL_POLICY}
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
@@ -205,8 +200,8 @@ services:
   manager:
     hostname: manager
     restart: unless-stopped
-    image: ${PODMAN_NAMESPACE}-${PODMAN_SERVICE}-${PODMAN_STAGE}-phpfpm:latest
-    pull_policy: never
+    image: ${PODMAN_NEXTCLOUDPHPFPM_IMAGE}
+    pull_policy: ${PODMAN_NEXTCLOUDPHPFPM_PULL_POLICY}
     networks:
       - backend
     user: "${PODMAN_USER_UID}:${PODMAN_GROUP_GID}"
