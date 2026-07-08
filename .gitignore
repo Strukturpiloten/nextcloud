@@ -28,3 +28,7 @@ temp/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+##############################
+# Generated files
+compose.yaml

@@ -1,0 +1,201 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "helpers:pinGitHubActionDigests"
+    ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Track external pinned container image tags and digests in .env.tmpl",
+            "managerFilePatterns": [
+                "/(^|\\/)\\.env\\.tmpl$/"
+            ],
+            "matchStrings": [
+                "PODMAN_(?:CLAMAV|MARIADB|NGINX|POSTGRES|REDIS|VALKEY|WHITEBOARD|NEXTCLOUDPHPFPM|NEXTCLOUDNOTIFYPUSH)_IMAGE=(?<depName>[^:@\\s]+(?:\\/[^:@\\s]+)*):(?<currentValue>[^@\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"
+            ],
+            "datasourceTemplate": "docker"
+        },
+        {
+            "customType": "regex",
+            "description": "Track Nextcloud server version in .env.tmpl",
+            "managerFilePatterns": [
+                "/(^|\\/)\\.env\\.tmpl$/"
+            ],
+            "matchStrings": [
+                "NEXTCLOUD_VERSION=(?<currentValue>[^\\n]+)"
+            ],
+            "depNameTemplate": "nextcloud/server",
+            "datasourceTemplate": "github-releases"
+        },
+        {
+            "customType": "regex",
+            "description": "Track the container-setup wrapper version",
+            "managerFilePatterns": [
+                "/^setup\\.sh$/",
+                "/^deps\\/container-setup\\/setup\\.sh$/"
+            ],
+            "matchStrings": [
+                "CONTAINER_SETUP_VERSION=\"(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\""
+            ],
+            "depNameTemplate": "container-setup setup.sh",
+            "packageNameTemplate": "Strukturpiloten/container-setup",
+            "datasourceTemplate": "github-releases",
+            "versioningTemplate": "semver-coerced"
+        }
+    ],
+    "packageRules": [
+        {
+            "description": "Use a readable topic for container-setup wrapper updates",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchPackageNames": [
+                "Strukturpiloten/container-setup"
+            ],
+            "commitMessageTopic": "container-setup setup.sh"
+        },
+        {
+            "description": "Keep GitHub Actions pinned to immutable commits while allowing Renovate updates",
+            "matchManagers": [
+                "github-actions"
+            ],
+            "pinDigests": true
+        },
+        {
+            "description": "Use a readable topic for Nextcloud server updates",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "github-releases"
+            ],
+            "matchPackageNames": [
+                "nextcloud/server"
+            ],
+            "commitMessageTopic": "Nextcloud server"
+        },
+        {
+            "description": "Automerge pinned container digest updates",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchUpdateTypes": [
+                "digest"
+            ],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        },
+        {
+            "description": "Automerge patch updates for pinned container base images",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        },
+        {
+            "description": "Automerge selected patch updates for tooling dependencies",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchPackageNames": [
+                "Strukturpiloten/container-setup"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        },
+        {
+            "description": "Treat numeric distro suffixes like alpine3.22 and ubi9 as updatable while keeping the image variant stable",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchCurrentValue": "/-(?:[a-z-]*(?:alpine|ubi))\\d+(?:\\.\\d+)?$/",
+            "versioning": "regex:^(?<major>\\d+)(?:\\.(?<minor>\\d+))?(?:\\.(?<patch>\\d+))?(?:-(?<compatibility>[a-z-]*(?:alpine|ubi))(?<build>\\d+)(?:\\.(?<revision>\\d+))?)?$"
+        },
+        {
+            "description": "Allow same-major.same-minor updates once the patch floor is >= 2",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchDepNames": [
+                "docker.io/mariadb"
+            ],
+            "allowedVersions": "/^{{{major}}}\\.{{{minor}}}\\.(?:[2-9]|[1-9]\\d+)(?:-.*)?$/"
+        },
+        {
+            "description": "Allow same-major updates once the patch floor is >= 2",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchDepNames": [
+                "docker.io/nginxinc/nginx-unprivileged"
+            ],
+            "allowedVersions": "/^{{{major}}}\\.\\d+\\.(?:[2-9]|[1-9]\\d+)(?:-.*)?$/"
+        },
+        {
+            "description": "Allow same-major updates once the minor floor is >= 1",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchDepNames": [
+                "docker.io/postgres"
+            ],
+            "allowedVersions": "/^{{{major}}}\\.[1-9]\\d*(?:-.*)?$/"
+        },
+        {
+            "description": "Allow same-major updates once the patch floor is >= 1",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchDepNames": [
+                "docker.io/redis",
+                "docker.io/valkey"
+            ],
+            "allowedVersions": "/^{{{major}}}\\.\\d+\\.[1-9]\\d*(?:-.*)?$/"
+        },
+        {
+            "description": "Allow releases once the patch floor is >= 2",
+            "matchManagers": [
+                "custom.regex"
+            ],
+            "matchDepNames": [
+                "ghcr.io/nextcloud-releases/whiteboard",
+                "nextcloud/server"
+            ],
+            "allowedVersions": "/^v?\\d+\\.\\d+\\.(?:[2-9]|[1-9]\\d+)$/"
+        }
+    ]
+}

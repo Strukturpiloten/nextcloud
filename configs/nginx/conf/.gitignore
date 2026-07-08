@@ -3,5 +3,5 @@
 
 # except:
 !.gitignore
-!nextcloud_default.conf
+!nextcloud_default.conf.tmpl
 !nextcloud_original.conf

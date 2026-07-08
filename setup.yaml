@@ -1,0 +1,228 @@
+version: 1
+variables:
+  - name: PodmanNamespace
+    flag: podman-namespace
+    prompt: Podman Namespace
+    description: Podman namespace used for container, network, and volume names
+    default: yourcompanyname
+
+  - name: PodmanService
+    flag: podman-service
+    prompt: Podman Service
+    description: Podman service name used for container, network, and volume names
+    default: nextcloud
+
+  - name: PodmanStage
+    flag: podman-stage
+    prompt: Podman Stage
+    description: Podman stage used for container, network, and volume names
+    default: prod
+
+  - name: DataDir
+    flag: data-dir
+    prompt: Data directory
+    description: Directory where generated runtime files and container data are stored
+    type: path
+    default: "{{ .ProjectDir }}/../{{ .PodmanNamespace }}_{{ .PodmanService }}_{{ .PodmanStage }}"
+
+  - name: DatabaseSQL
+    flag: database-sql
+    prompt: Database SQL service (postgresql/mariadb)
+    description: "SQL database service to use: postgresql or mariadb"
+    required: true
+    invalid_message: Please choose postgresql or mariadb.
+    choices:
+      - mariadb
+      - postgresql
+    default: postgresql
+
+  - name: DatabaseKeyValue
+    flag: database-key-value
+    prompt: Database key-value service (valkey/redis)
+    description: "Key-value database service to use: valkey or redis"
+    required: true
+    invalid_message: Please choose valkey or redis.
+    choices:
+      - valkey
+      - redis
+    default: valkey
+
+  - name: UserUID
+    flag: uid
+    prompt: User ID
+    description: Host user ID for container processes
+    type: int
+    default: "{{ .CurrentUserUID }}"
+
+  - name: GroupGID
+    flag: gid
+    prompt: Group ID
+    description: Host group ID for container processes
+    type: int
+    default: "{{ .CurrentGroupGID }}"
+
+  - name: UseReverseProxy
+    flag: reverse-proxy
+    prompt: Use an external reverse proxy network
+    description: "Whether an external reverse-proxy network is used: true or false"
+    type: bool
+    default: "{{ if .FlagValues.ReverseProxyNetworkName }}true{{ else }}false{{ end }}"
+
+  - name: ReverseProxyNetworkName
+    flag: reverse-proxy-network-name
+    prompt: External reverse-proxy network name
+    description: Already-created external reverse-proxy network name
+    required_when: "{{ .UseReverseProxy }}"
+    forbidden_when: "{{ not .UseReverseProxy }}"
+    forbidden_message: --reverse-proxy-network-name requires --reverse-proxy true
+
+  - name: DomainName
+    flag: domain
+    prompt: Domain name
+    description: Domain name served by nginx
+    required: true
+
+  - name: SSLDir
+    flag: ssl-dir
+    prompt: SSL certificate directory
+    description: SSL certificate directory when no reverse proxy is used
+    type: path
+    default: "{{ .DataDir }}/ssl"
+    when: "{{ not .UseReverseProxy }}"
+
+computed:
+  - name: DatabaseSQLService
+    value: "{{ .DatabaseSQL }}"
+  - name: DatabaseKeyValueService
+    value: "{{ .DatabaseKeyValue }}"
+  - name: UseMariaDB
+    type: bool
+    value: '{{ eq .DatabaseSQL "mariadb" }}'
+  - name: UsePostgreSQL
+    type: bool
+    value: '{{ eq .DatabaseSQL "postgresql" }}'
+  - name: UseRedis
+    type: bool
+    value: '{{ eq .DatabaseKeyValue "redis" }}'
+  - name: UseValkey
+    type: bool
+    value: '{{ eq .DatabaseKeyValue "valkey" }}'
+
+passwords:
+  - name: DatabaseSQLPassword
+    length: 24
+  - name: MariaDBRootPassword
+    length: 24
+    when: "{{ .UseMariaDB }}"
+  - name: NextcloudAdminPassword
+    length: 24
+  - name: WhiteboardJwtSecretKey
+    length: 32
+
+directories:
+  - path: "{{ .DataDir }}"
+  - path: "{{ .DataDir }}/configs"
+  - path: "{{ .DataDir }}/configs/nginx/conf"
+  - path: "{{ .DataDir }}/configs/installer"
+  - path: "{{ .DataDir }}/configs/manager"
+  - path: "{{ .DataDir }}/configs/manager/cron"
+  - path: "{{ .DataDir }}/configs/phpfpm"
+  - path: "{{ .DataDir }}/configs/phpfpm/conf"
+  - path: "{{ .DataDir }}/configs/phpfpm/ini"
+  - path: "{{ .DataDir }}/nextcloud"
+  - path: "{{ .DataDir }}/nextcloud_data"
+  - path: "{{ .DataDir }}/clamav_data"
+  - path: "{{ .DataDir }}/clamav_log"
+  - path: "{{ .DataDir }}/mariadb"
+    when: "{{ .UseMariaDB }}"
+  - path: "{{ .DataDir }}/postgres"
+    when: "{{ .UsePostgreSQL }}"
+  - path: "{{ .DataDir }}/redis"
+    when: "{{ .UseRedis }}"
+  - path: "{{ .DataDir }}/valkey"
+    when: "{{ .UseValkey }}"
+  - path: "{{ .SSLDir }}"
+    when: "{{ not .UseReverseProxy }}"
+
+assets:
+  - source: configs
+    target: "{{ .DataDir }}/configs"
+    exclude:
+      names:
+        - .gitignore
+      suffixes:
+        - .tmpl
+
+env:
+  source: ".env.tmpl"
+  output: "{{ .DataDir }}/.env"
+  default_output: "{{ .DataDir }}/.env_default"
+  backup_name_template: ".env_{{ .Timestamp }}"
+  mode: "0600"
+  protected:
+    suffixes:
+      - _CONTAINER
+      - _IMAGE
+      - _PASSWORD
+    keys:
+      - NGINX_INTERNAL_URL
+      - PODMAN_NAMESPACE
+      - PODMAN_NGINX_SSL_DIR_CONTAINER
+      - PODMAN_SERVICE
+      - PODMAN_STAGE
+
+templates:
+  - source: compose.yaml.tmpl
+    target: "{{ .DataDir }}/compose.yaml"
+    mode: "0644"
+  - source: configs/nginx/conf/nextcloud_default.conf.tmpl
+    target: "{{ .DataDir }}/configs/nginx/conf/nextcloud_default.conf"
+    mode: "0644"
+
+state:
+  output: "{{ .DataDir }}/setup.json"
+  mode: "0644"
+  entries:
+    - key: data_dir
+      variable: DataDir
+    - key: database_key_value
+      variable: DatabaseKeyValue
+    - key: database_sql
+      variable: DatabaseSQL
+    - key: domain_name
+      variable: DomainName
+    - key: group_gid
+      variable: GroupGID
+    - key: podman_namespace
+      variable: PodmanNamespace
+    - key: podman_service
+      variable: PodmanService
+    - key: podman_stage
+      variable: PodmanStage
+    - key: project_dir
+      variable: ProjectDir
+    - key: reverse_proxy_network_name
+      variable: ReverseProxyNetworkName
+      omit_empty: true
+    - key: ssl_dir
+      variable: SSLDir
+      omit_empty: true
+    - key: use_reverse_proxy
+      variable: UseReverseProxy
+      type: bool
+    - key: user_uid
+      variable: UserUID
+
+messages:
+  - |
+
+    Generated runtime files in "{{ .DataDir }}".
+
+    Run from inside "{{ .DataDir }}", but `-f` can be omitted:
+      cd "{{ .DataDir }}"
+      podman compose -f "compose.yaml" --env-file ".env" up -d
+
+    Run from anywhere:
+      podman compose -f "{{ .DataDir }}/compose.yaml" --env-file "{{ .DataDir }}/.env" up -d
+
+    For Docker use the same commands with `docker compose ...`.
